@@ -27,14 +27,12 @@ import com.tarotreader.app.data.AppRoutes
 import com.tarotreader.app.model.ChatMessage
 import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.ui.ChatView
+import com.tarotreader.app.ui.ContentTabs
 import com.tarotreader.app.ui.FeatureDescriptionScreen
 import com.tarotreader.app.ui.MainScreen
 import com.tarotreader.app.ui.NavDrawer
 import kotlinx.coroutines.launch
 
-/**
- * Routs definition
- */
 
 @Composable
 fun TarotReaderApp(
@@ -79,7 +77,8 @@ fun TarotReaderApp(
                     chatViewModel = chatViewModel
                 )
             }
-            composable(route = AppRoutes.Test.name) {
+            composable(route = AppRoutes.Learn.name) {
+                ContentTabs()
             }
         }
     }

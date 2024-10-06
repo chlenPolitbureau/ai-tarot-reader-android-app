@@ -8,7 +8,11 @@ enum class Suites {
     CUPS,
     PENTACLES,
     SWORDS,
-    WANDS
+    WANDS;
+
+    override fun toString(): String {
+        return name.replaceFirstChar { it.uppercase() }
+    }
 }
 
 enum class TarotCard(val suite: Suites, @DrawableRes val img: Int) {
@@ -94,4 +98,19 @@ enum class TarotCard(val suite: Suites, @DrawableRes val img: Int) {
     override fun toString(): String {
         return name.replace("_", " ")
     }
+}
+
+enum class Spread(
+    @DrawableRes val schemeImg: Int,
+    val description: String,
+    val nCards: Int,
+    val affiliation: SpreadAffiliation) {
+    SINGLE_CARD(schemeImg = R.drawable.single_card, description = "Single Card", nCards = 1, affiliation = SpreadAffiliation.CLASSIC),
+    THREE_CARD(schemeImg = R.drawable.three_card, description = "Three Card", nCards = 3, affiliation = SpreadAffiliation.CLASSIC)
+}
+
+enum class SpreadAffiliation {
+    CLASSIC,
+    RELATIONSHIP,
+    CAREER
 }

@@ -14,7 +14,7 @@ object BottomAppBarDataSource {
         BottomBarMenuItem(
             title = R.string.Learn,
             icon = R.drawable.learn_svgrepo_com,
-            route = AppRoutes.Chat.name
+            route = AppRoutes.Learn.name
         ),
         BottomBarMenuItem(
             title = R.string.Diary,
@@ -28,5 +28,6 @@ enum class AppRoutes(@StringRes val title: Int) {
     Intro(title = R.string.intro),
     Main(title = R.string.main),
     Chat(title = R.string.chat),
-    Test(title = R.string.test)
+    Test(title = R.string.test),
+    Learn(title = R.string.learn)
 }

@@ -1,26 +1,32 @@
 package com.tarotreader.app.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,14 +34,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tarotreader.app.R
+import com.tarotreader.app.data.ArticlesDataSource
+import com.tarotreader.app.model.Article
+import com.tarotreader.app.model.LearningViewModel
+import com.tarotreader.app.model.Spread
+import com.tarotreader.app.model.TarotCard
 
 @Preview
 @Composable
-fun ContentTabs() {
+fun ContentTabs(
+    learningViewModel: LearningViewModel = LearningViewModel()
+) {
     var selectedTab by remember { mutableStateOf(0) }
     val titles = listOf("Cards", "Spreads", "Articles")
 
@@ -53,81 +68,110 @@ fun ContentTabs() {
         }
 
         when (selectedTab) {
-            0 -> CardsContent()
-            1 -> SpreadsContent()
-            2 -> ArticlesContent()
+            0 -> CardsContent(
+                learningViewModel = learningViewModel
+            )
+            1 -> SpreadsContent(
+                learningViewModel = learningViewModel
+            )
+            2 -> ArticlesContent(
+                dataSource = ArticlesDataSource
+            )
         }
     }
 }
 
 @Composable
-fun CardsContent() {
+fun CardsContent(
+    learningViewModel: LearningViewModel
+) {
     // Implement your Cards content here with LazyColumn and filtering chips
-    val filters = listOf("Filter 1", "Filter 2", "Filter 3")
-    var selectedFilter by remember { mutableStateOf("") }
+    val filters = learningViewModel.suites
+    var selectedFilter by remember { mutableStateOf(filters) }
+    var selectedChip by remember { mutableStateOf("") }
+    val cards = learningViewModel.filteredCards(selectedFilter.toList())
 
     Column {
-        LazyRow (
+        LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            items(filters) { filter -> FilterChip(
-                onClick = { selectedFilter = filter },
-                selected = selectedFilter == filter,
-                label = { Text(filter) }
-            )
+            items(filters) { filter ->
+                FilterChip(
+                    onClick = { if(selectedChip == filter.toString()) {
+                                    selectedChip = ""
+                                    selectedFilter = filters
+                                } else {
+                                    selectedChip = filter.toString()
+                                    selectedFilter = listOf(filter)
+                                }
+                              },
+                    selected = selectedChip == filter.toString(),
+                    label = { Text(filter.toString()) }
+                )
             }
         }
 
-        LazyVerticalGrid (
+        LazyVerticalGrid(
             columns = GridCells.Fixed(3)
         ) {
-            // Display cards based on selectedFilter
-            items(10) { index ->
+            items(cards.size) { index ->
                 CardForGrid(
+                    card = cards[index],
                     modifier = Modifier.padding(8.dp)
                 )
+            }
+        }
+    }
+}
+
+@Preview
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SpreadsContent(
+    modifier: Modifier = Modifier,
+    learningViewModel: LearningViewModel = LearningViewModel()
+) {
+    val spreadList = learningViewModel.spreads
+    // Implement your Spreads content here with LazyColumn
+    LazyColumn {
+        items(learningViewModel.spreadAffiliations.size) { index ->
+            Text("Spreads for " + learningViewModel.spreadAffiliations[index].name)
+            LazyRow(
+                modifier = modifier.fillMaxWidth()
+            ) {
+                items(spreadList.size) { ind ->
+                    SpreadCardComposable(
+                        spread = spreadList[ind],
+                        onClick = {},
+                        modifier = Modifier.padding(end = 18.dp, bottom = 60.dp)
+                    )
                 }
             }
         }
     }
-
-
-@Composable
-fun SpreadsContent() {
-    // Implement your Spreads content here with LazyColumn
-    LazyColumn {
-        items(10) { index ->
-            Card(modifier = Modifier.padding(8.dp)) {
-                Text("Spread ${index + 1}")
-            }
-        }
-    }
 }
 
 @Preview
 @Composable
-fun ArticlesContent() {
+fun ArticlesContent(
+    dataSource: ArticlesDataSource = ArticlesDataSource
+) {
     // Implement your Articles content here with LazyColumn and image + headline layout
     LazyColumn {
-        items(10) { index ->
-            Row(modifier = Modifier.padding(8.dp)) {
-                Image(
-                    painter = painterResource(id = R.drawable.queen_of_spades2),// Replace with your image
-                    contentDescription = "Article Image",
-                    modifier = Modifier.size(50.dp)
-                )
-                Text("Headline ${index + 1}", modifier = Modifier.padding(start = 8.dp))
-            }
+        items(dataSource.articles.size) { index ->
+            ArticlePreviewCard(
+                article = dataSource.articles[index],
+                onClick = {}
+            )
         }
     }
 }
 
-@Preview
+
 @Composable
 fun CardForGrid(
-    cardName: String = "Card Name",
-    @DrawableRes img: Int = R.drawable.c01,
+    card: TarotCard,
     modifier: Modifier = Modifier
 ) {
     Column (
@@ -135,12 +179,99 @@ fun CardForGrid(
         modifier = modifier
     ) {
         Text(
-            cardName,
-            modifier = modifier
+            card.toString(),
+            modifier = modifier,
+            textAlign = TextAlign.Center,
+            minLines = 2
         )
         Image(
-            painter = painterResource(id = R.drawable.c01),
-            contentDescription = cardName
+            painter = painterResource(id = card.img),
+            contentDescription = card.toString()
         )
     }
+}
+
+@Composable
+fun SpreadCardComposable(
+    modifier: Modifier = Modifier,
+    spread: Spread,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column {
+            Image(
+                painter = painterResource(id = spread.schemeImg),
+                contentDescription = spread.name,
+                modifier = Modifier
+                    .widthIn(min = 280.dp, max = 360.dp)
+                    .height(150.dp)
+            )
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(text = spread.name)
+                Text(text = spread.description)
+                Button(
+                    onClick = onClick,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(text = "Learn more")
+                }
+            }
+        }
+    }}
+
+@Preview
+@Composable
+fun CardComposablePreview() {
+    SpreadCardComposable(
+        spread = Spread.SINGLE_CARD,
+        onClick = {}
+    )
+}
+
+@Composable
+fun ArticlePreviewCard(
+    modifier: Modifier = Modifier,
+    article: Article,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(article.img),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .weight(0.25f) // Image takes 1/4 of the row's width
+                .aspectRatio(1f) // Maintain aspect ratio
+
+        )
+        Column(
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .weight(0.75f) // Text and button take 3/4 of the row's width
+        ) {
+            Text(text = article.header)
+            Text(text = article.previewText)
+            Button(onClick = onClick) {
+                Text(text = "Read All")
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun ArticlePreview() {
+    val article = ArticlesDataSource.articles
+    ArticlePreviewCard(
+        article = article[0],
+        onClick = {}
+    )
 }
