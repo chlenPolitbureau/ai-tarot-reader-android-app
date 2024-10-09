@@ -7,9 +7,9 @@ object FeaturesDataSource {
     val features = listOf(
         Feature(title = "AI tarot reader",
             description = "Ask the cards your questions and get the reading prepared by the AI Reader",
-            backgroundImage = R.drawable.fence),
+            backgroundImage = R.drawable.background_leonardo),
         Feature(title = "Learn about tarot",
             description = "Deep dive into the world of tarot. Learn about cards, decks, spreads, meanings",
-            backgroundImage = R.drawable.fence),
+            backgroundImage = R.drawable.background_2_leo),
     )
 }

@@ -19,7 +19,7 @@ object BottomAppBarDataSource {
         BottomBarMenuItem(
             title = R.string.Diary,
             icon = R.drawable.diary_svgrepo_com,
-            route = AppRoutes.Test.name
+            route = AppRoutes.Journal.name
         )
     )
 }
@@ -29,5 +29,6 @@ enum class AppRoutes(@StringRes val title: Int) {
     Main(title = R.string.main),
     Chat(title = R.string.chat),
     Test(title = R.string.test),
-    Learn(title = R.string.learn)
+    Learn(title = R.string.learn),
+    Journal(title = R.string.diary)
 }

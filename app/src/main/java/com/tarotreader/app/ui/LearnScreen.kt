@@ -1,6 +1,7 @@
 package com.tarotreader.app.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,14 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -25,8 +24,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,17 +36,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tarotreader.app.R
+import androidx.navigation.NavHostController
 import com.tarotreader.app.data.ArticlesDataSource
 import com.tarotreader.app.model.Article
 import com.tarotreader.app.model.LearningViewModel
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
+import com.tarotreader.app.ui.theme.Typography
 
-@Preview
+
 @Composable
 fun ContentTabs(
-    learningViewModel: LearningViewModel = LearningViewModel()
+    learningViewModel: LearningViewModel = LearningViewModel(),
+    navController: NavHostController
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val titles = listOf("Cards", "Spreads", "Articles")
@@ -69,13 +68,15 @@ fun ContentTabs(
 
         when (selectedTab) {
             0 -> CardsContent(
-                learningViewModel = learningViewModel
+                learningViewModel = learningViewModel,
+                navController = navController
             )
             1 -> SpreadsContent(
                 learningViewModel = learningViewModel
             )
             2 -> ArticlesContent(
-                dataSource = ArticlesDataSource
+                dataSource = ArticlesDataSource,
+                navController = navController
             )
         }
     }
@@ -83,7 +84,8 @@ fun ContentTabs(
 
 @Composable
 fun CardsContent(
-    learningViewModel: LearningViewModel
+    learningViewModel: LearningViewModel,
+    navController: NavHostController
 ) {
     // Implement your Cards content here with LazyColumn and filtering chips
     val filters = learningViewModel.suites
@@ -118,7 +120,10 @@ fun CardsContent(
             items(cards.size) { index ->
                 CardForGrid(
                     card = cards[index],
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(8.dp),
+                    onClick = {
+                        navController.navigate("content/card/${cards[index].name}")
+                    }
                 )
             }
         }
@@ -131,20 +136,28 @@ fun CardsContent(
 fun SpreadsContent(
     modifier: Modifier = Modifier,
     learningViewModel: LearningViewModel = LearningViewModel()
-) {
+)
+{
     val spreadList = learningViewModel.spreads
+    val affiliations = learningViewModel.spreadAffiliations
     // Implement your Spreads content here with LazyColumn
     LazyColumn {
-        items(learningViewModel.spreadAffiliations.size) { index ->
-            Text("Spreads for " + learningViewModel.spreadAffiliations[index].name)
+        items(affiliations.size) { index ->
+            Text(
+                "Spreads for " + affiliations[index].name,
+                style = Typography.titleSmall,
+                modifier = Modifier.padding(8.dp)
+                )
             LazyRow(
                 modifier = modifier.fillMaxWidth()
             ) {
-                items(spreadList.size) { ind ->
+                val spreadListFiltered = spreadList.filter { it.affiliation == affiliations[index] }
+
+                items(spreadListFiltered.size) { ind ->
                     SpreadCardComposable(
-                        spread = spreadList[ind],
+                        spread = spreadListFiltered[ind],
                         onClick = {},
-                        modifier = Modifier.padding(end = 18.dp, bottom = 60.dp)
+                        modifier = Modifier.padding(end = 18.dp, bottom = 40.dp)
                     )
                 }
             }
@@ -152,10 +165,10 @@ fun SpreadsContent(
     }
 }
 
-@Preview
 @Composable
 fun ArticlesContent(
-    dataSource: ArticlesDataSource = ArticlesDataSource
+    dataSource: ArticlesDataSource = ArticlesDataSource,
+    navController: NavHostController
 ) {
     // Implement your Articles content here with LazyColumn and image + headline layout
     LazyColumn {
@@ -172,7 +185,8 @@ fun ArticlesContent(
 @Composable
 fun CardForGrid(
     card: TarotCard,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -186,7 +200,10 @@ fun CardForGrid(
         )
         Image(
             painter = painterResource(id = card.img),
-            contentDescription = card.toString()
+            contentDescription = card.toString(),
+            modifier = Modifier.clickable(
+                onClick = onClick
+            )
         )
     }
 }
@@ -208,6 +225,7 @@ fun SpreadCardComposable(
                 modifier = Modifier
                     .widthIn(min = 280.dp, max = 360.dp)
                     .height(150.dp)
+                    .padding(top=6.dp)
             )
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -248,7 +266,7 @@ fun ArticlePreviewCard(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .weight(0.25f) // Image takes 1/4 of the row's width
+                .weight(0.28f) // Image takes 1/4 of the row's width
                 .aspectRatio(1f) // Maintain aspect ratio
 
         )
@@ -257,7 +275,10 @@ fun ArticlePreviewCard(
                 .padding(start = 16.dp)
                 .weight(0.75f) // Text and button take 3/4 of the row's width
         ) {
-            Text(text = article.header)
+            Text(
+                text = article.header,
+                style = Typography.titleSmall
+            )
             Text(text = article.previewText)
             Button(onClick = onClick) {
                 Text(text = "Read All")

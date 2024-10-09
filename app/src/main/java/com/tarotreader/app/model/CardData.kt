@@ -106,7 +106,10 @@ enum class Spread(
     val nCards: Int,
     val affiliation: SpreadAffiliation) {
     SINGLE_CARD(schemeImg = R.drawable.single_card, description = "Single Card", nCards = 1, affiliation = SpreadAffiliation.CLASSIC),
-    THREE_CARD(schemeImg = R.drawable.three_card, description = "Three Card", nCards = 3, affiliation = SpreadAffiliation.CLASSIC)
+    THREE_CARD(schemeImg = R.drawable.three_card, description = "Three Card", nCards = 3, affiliation = SpreadAffiliation.CLASSIC),
+    BROKEN_HEART(schemeImg = R.drawable.broken_heart, description = "Broken heart", nCards = 7, affiliation = SpreadAffiliation.RELATIONSHIP),
+    HEALING_HEARTS(schemeImg = R.drawable.healing_hearts, description = "Healing hearts", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP),
+    PYRAMID(schemeImg = R.drawable.pyramid, description = "Pyramid", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP)
 }
 
 enum class SpreadAffiliation {

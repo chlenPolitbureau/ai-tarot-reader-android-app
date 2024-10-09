@@ -51,7 +51,8 @@ fun FeatureDescriptionScreen(
                 painter = painterResource(featureList[0].backgroundImage),
                 contentDescription = featureList[0].title,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                alpha = 0.33f
             )
             HorizontalPager(
                 state = pagerState,
@@ -99,12 +100,13 @@ fun                                  FeatureCard(
     ) {
         Text(
             text = feature.title,
-            style = Typography.bodyLarge,
+            style = Typography.titleLarge,
             modifier = modifier.padding(14.dp)
         )
         Text(
             text = feature.description,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            style = Typography.bodyMedium
         )
     }
 }
