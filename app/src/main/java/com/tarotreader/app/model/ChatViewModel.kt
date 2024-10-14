@@ -1,21 +1,32 @@
 package com.tarotreader.app.model
 
+import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tarotreader.app.AppSettings
 import com.tarotreader.app.data.ChatDataSource
 import com.tarotreader.app.data.PredictRequest
 import com.tarotreader.app.data.RetrofitClient
+import kotlinx.collections.immutable.mutate
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 
 
-class ChatViewModel: ViewModel() {
+class ChatViewModel(
+    val dataStore: DataStore<AppSettings>,
+): ViewModel() {
     private val _messages = mutableStateListOf(ChatDataSource.initState)
     val messages = _messages
 
@@ -39,7 +50,20 @@ class ChatViewModel: ViewModel() {
                 makePrediction(
                     question = message
                 )
+                viewModelScope.launch {
+
+                }
             }
+        }
+    }
+
+    private suspend fun writePrediction(prediction: Prediction) {
+        dataStore.updateData {
+            it.copy(
+                predictions = it.predictions.mutate {
+                    it.add(prediction)
+                }
+            )
         }
     }
 
@@ -48,10 +72,16 @@ class ChatViewModel: ViewModel() {
             val prediction = RetrofitClient.tarotReaderAPIService.getPrediction(
                 PredictRequest(question)
             )
+            val response = prediction.body()?.prediction ?: "Sorry, I don't know"
             addMessage(
-                message = prediction.body()?.prediction ?: "Sorry, I don't know",
+                message = response,
                 author = "app"
             )
+            val pred = Prediction(
+                question = question,
+                prediction = response
+            )
+            writePrediction(pred) // write prediction locally into DataStore
             ifExpectingPrediction.value = false
         }
     }
@@ -92,8 +122,9 @@ data class TarotReader(
     val isOnline: Boolean,
 )
 
+@Serializable
 data class Prediction (
     val question: String,
     val prediction: String,
-    val prediction_id: String
+//    val prediction_id: String
 )

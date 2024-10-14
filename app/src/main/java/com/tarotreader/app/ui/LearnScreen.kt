@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.tarotreader.app.Content
 import com.tarotreader.app.data.ArticlesDataSource
 import com.tarotreader.app.model.Article
 import com.tarotreader.app.model.LearningViewModel
@@ -122,7 +123,12 @@ fun CardsContent(
                     card = cards[index],
                     modifier = Modifier.padding(8.dp),
                     onClick = {
-                        navController.navigate("content/card/${cards[index].name}")
+                        navController.navigate(
+                            Content(
+                            type = "card",
+                            id = cards[index].name
+                            )
+                        )
                     }
                 )
             }

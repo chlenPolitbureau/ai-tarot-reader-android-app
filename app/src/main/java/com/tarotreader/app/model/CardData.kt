@@ -15,7 +15,14 @@ enum class Suites {
     }
 }
 
-enum class TarotCard(val suite: Suites, @DrawableRes val img: Int) {
+enum class TarotCard(
+    val suite: Suites,
+    @DrawableRes val img: Int,
+    val descriptionUpright: String? = null,
+    val descriptionReversed: String? = null,
+    val affiliationUpright: List<String>? = null,
+    val affiliationReversed: List<String>? = null
+) {
     The_Fool(suite = Suites.MAJOR, img = R.drawable.m00),
     The_Magician(suite = Suites.MAJOR, img = R.drawable.m01),
     The_High_Priestess(suite = Suites.MAJOR, img = R.drawable.m02),

@@ -1,16 +1,11 @@
 package com.tarotreader.app
 
 import android.content.Context
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,25 +18,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.tarotreader.app.data.AppRoutes
-import com.tarotreader.app.data.BottomAppBarDataSource
-import com.tarotreader.app.model.BottomBarMenuItem
+import androidx.navigation.toRoute
+import com.tarotreader.app.data.BottomBarMenuItem
 import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.ui.ChatView
 import com.tarotreader.app.ui.ContentTabs
@@ -49,77 +43,115 @@ import com.tarotreader.app.ui.ContentViewPage
 import com.tarotreader.app.ui.FeatureDescriptionScreen
 import com.tarotreader.app.ui.MainScreen
 import com.tarotreader.app.ui.NavDrawer
+import com.tarotreader.app.ui.PredictionHistoryView
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TarotReaderApp(
     context: Context,
+    dataStore: DataStore<AppSettings>,
     chatViewModel: ChatViewModel,
-    navController: NavHostController = rememberNavController(),
-    items: List<BottomBarMenuItem> = BottomAppBarDataSource.items
+    navController: NavHostController = rememberNavController()
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen = AppRoutes.valueOf(
-        backStackEntry?.destination?.route ?: AppRoutes.Main.name
+    val currentScreen = backStackEntry?.destination
+        ?.route?.removePrefix("com.tarotreader.app.") ?: ""
+    val screenTitle = remember { mutableStateOf("") }
+    val currentDate = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("MMMM, dd")
+    val showBars = remember { mutableStateOf(true) }
+
+    val contentType = remember { mutableStateOf("") }
+
+    val dataStoreState = dataStore.data.collectAsState(
+        initial = AppSettings()
     )
+
+    fun updateContentType(name: String) {
+        contentType.value = name
+    }
+
+
+    if (currentScreen == "Intro") {
+            showBars.value = false
+        }
+    else if (currentScreen == "Main") {
+            screenTitle.value = currentDate.format(formatter)
+            showBars.value = true
+        }
+    else if (currentScreen.contains("Content") ) {
+            screenTitle.value = "About the ${contentType.value}"
+        }
+    else {
+        screenTitle.value = currentScreen
+    }
 
     Scaffold(
         topBar = {
-            TarotReaderAppBar(
-                currentScreen = currentScreen,
-                canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() }
-            )
+            if(showBars.value) {
+                TarotReaderAppBar(
+                    currentScreen = screenTitle.value,
+                )
+            }
         },
         bottomBar = {
-            RealBottomBar(
-                currentScreen = currentScreen,
-                items = items,
-                navController = navController
-            )
+            if(showBars.value) {
+                RealBottomBar(
+                    currentScreen = currentScreen,
+                    navController = navController
+                )
+            }
         }
     ) {
         innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = AppRoutes.Intro.name,
+            startDestination = Intro,
             modifier = Modifier.padding(innerPadding)
         ) {
-            val contentRoute = "content/{type}/{id}"
-
-            composable(route = AppRoutes.Intro.name) {
+            composable<Intro> {
                 FeatureDescriptionScreen(
                     onNextButtonClicked = {
-                        navController.navigate(AppRoutes.Main.name)
+                        navController.navigate(Main)
                     }
                 )
             }
-            composable(route = AppRoutes.Main.name) {
+            composable<Main> {
                 MainScreen(
                     navController = navController
                 )
             }
-            composable(route = AppRoutes.Chat.name) {
+            composable<Chat> {
                 ChatView(
                     chatViewModel = chatViewModel
                 )
             }
-            composable(route = AppRoutes.Learn.name) {
+            composable<Learn> {
                 ContentTabs(
                     navController = navController
                 )
             }
-            composable(
-                route = contentRoute,
-                arguments = listOf(
-                    navArgument("type") { type = NavType.StringType },
-                    navArgument("id") { type = NavType.StringType }
+            composable<Journal> {
+                PredictionHistoryView(
+                    predictions = dataStoreState.value.predictions,
+//                    navController = navController
                 )
-            ) { backStackEntry ->
-                val type = backStackEntry.arguments?.getString("type")
-                val id = backStackEntry.arguments?.getString("id")
-                ContentViewPage(type = type, id = id, onClose = {})
+            }
+            composable<Content> {
+                val args = it.toRoute<Content>()
+                ContentViewPage(
+                    type = args.type,
+                    id = args.id,
+                    postback = ::updateContentType,
+                    onClose = {},
+                    navController = navController
+                )
             }
         }
     }
@@ -128,13 +160,14 @@ fun TarotReaderApp(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAppBarClass(
-        modifier: Modifier = Modifier,
-        drawerState: DrawerState
-        ) {
+    screenTitle: String,
+    modifier: Modifier = Modifier,
+    drawerState: DrawerState
+) {
     val scope = rememberCoroutineScope()
 
     TopAppBar(
-        title = { },
+        title = { Text(screenTitle) },
         navigationIcon = {
             IconButton(
                 onClick = { scope.launch { drawerState.open() } },
@@ -159,98 +192,90 @@ fun TopAppBarClass(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TarotReaderAppBar(
-    currentScreen: AppRoutes,
-    canNavigateBack: Boolean,
-    navigateUp: () -> Unit,
+    currentScreen: String,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
 
-    if(currentScreen != AppRoutes.Intro) {
-        TopAppBarClass(modifier, drawerState)
-        NavDrawer(
-            drawerState = drawerState,
-            scope = scope) {
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TarotReaderBottomBar(
-    currentScreen: AppRoutes,
-    items: List<BottomBarMenuItem>,
-    navController: NavHostController,
-    modifier: Modifier = Modifier
-) {
-    if(currentScreen != AppRoutes.Intro) {
-        LazyRow (
-            horizontalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(items.size) {
-                    index ->
-                BottomAppBarItem(
-                    text = items[index].title,
-                    icon = items[index].icon,
-                    onClick = { navController.navigate(items[index].route) })
-            }
-        }
-    }
-}
-
-@Composable
-fun BottomAppBarItem(
-    @StringRes text: Int,
-    @DrawableRes icon: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column (
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        IconButton(
-            onClick = onClick
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = text.toString(),
-                modifier = Modifier
-                    .clip(RectangleShape)
-                    .padding(4.dp)
-            )
-        }
-        Text(stringResource(text))
+    TopAppBarClass(currentScreen, modifier, drawerState)
+    NavDrawer(
+        drawerState = drawerState,
+        scope = scope) {
     }
 }
 
 @Composable
 fun RealBottomBar(
-    currentScreen: AppRoutes,
-    items: List<BottomBarMenuItem>,
+    currentScreen: String,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    if(currentScreen != AppRoutes.Intro) {
-        NavigationBar(
-            modifier = modifier.height(100.dp)
+    val items = listOf(
+        BottomBarMenuItem(
+            text = R.string.home,
+            icon = R.drawable.playing_cards_svgrepo_com,
+            navigate = { navController.navigate(Main) }
+        ),
+        BottomBarMenuItem(
+            text = R.string.chat,
+            icon = R.drawable.playing_cards_svgrepo_com,
+            navigate = { navController.navigate(Chat) }
+        ),
+        BottomBarMenuItem(
+            text = R.string.diary,
+            icon = R.drawable.diary_svgrepo_com,
+            navigate = { navController.navigate(Journal) }
+        ),
+        BottomBarMenuItem(
+            text = R.string.learn,
+            icon = R.drawable.learn_svgrepo_com,
+            navigate = { navController.navigate(Learn) }
+        ),
+        BottomBarMenuItem(
+            text = R.string.journal,
+            icon = R.drawable.learn_svgrepo_com,
+            navigate = { navController.navigate(Journal) }
+        )
+
+    )
+    NavigationBar(
+        modifier = modifier.height(100.dp)
         ) {
-            items.forEach { item ->
-                NavigationBarItem(
-                    icon = {
-                        Icon(
-                            painter = painterResource(id = item.icon),
-                            contentDescription = item.title.toString(),
-                            modifier = Modifier.size(28.dp)
+        items.forEach { item ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        painter = painterResource(id = item.icon),
+                        contentDescription = item.text.toString(),
+                        modifier = Modifier.size(28.dp)
                         )
-                    },
-                    label = { Text(stringResource(item.title)) },
-                    onClick = { navController.navigate(item.route) },
-                    selected = currentScreen.name == item.route
-                )
-            }
+                       },
+                label = { Text(stringResource(item.text)) },
+                onClick = item.navigate,
+                selected = currentScreen == item.text.toString()
+            )
         }
     }
 }
+
+@Serializable
+object Intro
+
+@Serializable
+object Main
+
+@Serializable
+object Journal
+
+@Serializable
+object Chat
+
+@Serializable
+object Learn
+
+@Serializable
+data class Content(
+    val type: String,
+    val id: String
+)

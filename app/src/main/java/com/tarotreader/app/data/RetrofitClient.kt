@@ -9,7 +9,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "http://45.91.171.49:5000/"
+    private const val BASE_URL = "http://45.91.171.49/"
     private val logging = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
 
     private val okHttpClient = OkHttpClient.Builder()

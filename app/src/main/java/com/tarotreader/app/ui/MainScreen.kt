@@ -16,14 +16,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.tarotreader.app.data.BottomAppBarDataSource
-import com.tarotreader.app.model.BottomBarMenuItem
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
 
 @Composable
 fun MainScreen(
-    items: List<BottomBarMenuItem> = BottomAppBarDataSource.items,
+    title: String = "Main",
     navController: NavHostController
 ) {
     Column(

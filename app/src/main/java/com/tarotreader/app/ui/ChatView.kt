@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,16 +47,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tarotreader.app.AppSettings
 import com.tarotreader.app.R
 import com.tarotreader.app.model.Author
 import com.tarotreader.app.model.ChatMessage
 import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.model.TarotReader
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun ChatView(
-        chatViewModel: ChatViewModel
+    title: String = "Reading",
+    chatViewModel: ChatViewModel
 ) {
     Column (
         modifier = Modifier.fillMaxSize()
@@ -77,14 +81,15 @@ fun ChatView(
 //            modifier = Modifier.weight(1f))
         ChatController(
             chatViewModel = chatViewModel,
-            modifier = Modifier.weight(1f))
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
 @Composable
 fun ChatController(
     chatViewModel: ChatViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column (
     ) {
@@ -317,16 +322,16 @@ fun ChatMessagePreview() {
     ChatItemBubble(
         message = ChatMessage(
             text = "Hello, worldspdjoijdfi jsad'ofkpoqkerf'poqekrogkeor!",
-            author = Author("111111"),
+            author = Author("1"),
             id = 0
             )
     )
 }
 
-@Preview
-@Composable
-fun ChatViewPreview() {
-    ChatView(
-        chatViewModel = ChatViewModel()
-    )
-}
+//@Preview
+//@Composable
+//fun ChatViewPreview() {
+//    ChatView(
+//        chatViewModel = ChatViewModel()
+//    )
+//}

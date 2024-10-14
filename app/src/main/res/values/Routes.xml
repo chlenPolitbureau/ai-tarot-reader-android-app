@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="intro">Intro</string>
     <string name="main">Main</string>
     <string name="chat">Chat</string>
     <string name="test">Test</string>
     <string name="learn">Learn</string>
     <string name="diary">Diary</string>
+    <string name="home">Home</string>
+    <string name="journal">Journal</string>
 </resources>

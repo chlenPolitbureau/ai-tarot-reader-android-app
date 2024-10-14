@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+//    id("com.google.protobuf") version "0.9.1"
 //    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
 }
 
@@ -71,6 +72,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     implementation("androidx.compose.material3:material3:1.3.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
@@ -78,6 +80,8 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    implementation("androidx.datastore:datastore:1.1.1")
+    implementation ("com.google.protobuf:protobuf-javalite:3.10.0")
     implementation(libs.material)
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
@@ -88,4 +92,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(kotlin("script-runtime"))
 }
