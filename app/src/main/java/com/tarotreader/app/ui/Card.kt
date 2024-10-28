@@ -26,7 +26,8 @@ import com.tarotreader.app.R
 fun FlippableCard (
     @DrawableRes front_img: Int,
     @DrawableRes back_img: Int = R.drawable.backside,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    postback: () -> Unit = {}
 ) {
     var rotated by remember { mutableStateOf(false) }
     var img by remember { mutableStateOf(back_img) }
@@ -38,6 +39,7 @@ fun FlippableCard (
 
     fun flip() {
         rotated = !rotated
+        postback()
     }
 
     Column(
@@ -53,7 +55,7 @@ fun FlippableCard (
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = modifier
-                .clickable { flip() }
+                .clickable { if (!rotated) flip() }
                 .clip(RoundedCornerShape(4.dp))
                 .graphicsLayer {
                     rotationY = rotation

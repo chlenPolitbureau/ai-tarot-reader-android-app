@@ -40,7 +40,7 @@ fun PredictionCard(prediction: Prediction) {
             Text(text = prediction.question)
             Text(
                 text= prediction.prediction,
-                maxLines = 3,
+                maxLines = 4,
                 overflow = TextOverflow.Ellipsis
             )
             // ... other prediction details

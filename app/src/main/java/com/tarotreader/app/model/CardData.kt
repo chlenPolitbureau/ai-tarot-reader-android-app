@@ -11,7 +11,7 @@ enum class Suites {
     WANDS;
 
     override fun toString(): String {
-        return name.replaceFirstChar { it.uppercase() }
+        return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
     }
 }
 
@@ -21,7 +21,9 @@ enum class TarotCard(
     val descriptionUpright: String? = null,
     val descriptionReversed: String? = null,
     val affiliationUpright: List<String>? = null,
-    val affiliationReversed: List<String>? = null
+    val affiliationReversed: List<String>? = null,
+    var orientation: Int = 1,
+    var rotated: Boolean = false
 ) {
     The_Fool(suite = Suites.MAJOR, img = R.drawable.m00),
     The_Magician(suite = Suites.MAJOR, img = R.drawable.m01),
@@ -103,7 +105,25 @@ enum class TarotCard(
     King_of_Pentacles(suite = Suites.PENTACLES, img = R.drawable.p14);
 
     override fun toString(): String {
-        return name.replace("_", " ")
+        return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
+    }
+}
+
+data class Draw(
+    val spread: Spread,
+    val listOfCards: List<TarotCard> = TarotCard.entries,
+    val flipChance: Double = 0.38
+) {
+    fun draw(): List<TarotCard> {
+        val drawn = listOfCards.shuffled().take(spread.nCards)
+        return drawn.map {
+            if (Math.random() < flipChance) {
+                it.orientation = -1
+                it
+            } else {
+                it
+            }
+        }
     }
 }
 
@@ -111,12 +131,18 @@ enum class Spread(
     @DrawableRes val schemeImg: Int,
     val description: String,
     val nCards: Int,
-    val affiliation: SpreadAffiliation) {
-    SINGLE_CARD(schemeImg = R.drawable.single_card, description = "Single Card", nCards = 1, affiliation = SpreadAffiliation.CLASSIC),
-    THREE_CARD(schemeImg = R.drawable.three_card, description = "Three Card", nCards = 3, affiliation = SpreadAffiliation.CLASSIC),
-    BROKEN_HEART(schemeImg = R.drawable.broken_heart, description = "Broken heart", nCards = 7, affiliation = SpreadAffiliation.RELATIONSHIP),
-    HEALING_HEARTS(schemeImg = R.drawable.healing_hearts, description = "Healing hearts", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP),
-    PYRAMID(schemeImg = R.drawable.pyramid, description = "Pyramid", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP)
+    val affiliation: SpreadAffiliation,
+    val manaCost: Int
+) {
+    SINGLE_CARD(schemeImg = R.drawable.single_card, description = "Single Card", nCards = 1, affiliation = SpreadAffiliation.CLASSIC, manaCost = 3),
+    THREE_CARDS(schemeImg = R.drawable.three_card, description = "Three Card", nCards = 3, affiliation = SpreadAffiliation.CLASSIC, manaCost = 4),
+    BROKEN_HEART(schemeImg = R.drawable.broken_heart, description = "Broken heart", nCards = 7, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 7),
+    HEALING_HEARTS(schemeImg = R.drawable.healing_hearts, description = "Healing hearts", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 6),
+    PYRAMID(schemeImg = R.drawable.pyramid, description = "Pyramid", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 6);
+
+    override fun toString(): String {
+        return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
+    }
 }
 
 enum class SpreadAffiliation {

@@ -26,14 +26,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TarotReaderTheme {
-//                val dataStore = dataStore.data.collectAsState(
-//                    initial = AppSettings()
-//                )
                 val dataStore = dataStore
                 val viewModelFactory = ChatViewModelFactory(dataStore)
                 val chatViewModel = ViewModelProvider(this, viewModelFactory)[ChatViewModel::class.java]
-//                val chatViewModel = viewModel<ChatViewModel>() // main Viewmodel initiator
-//                val chatViewModel = ChatViewModel(dataStore=dataStore)
                 TarotReaderApp(
                     dataStore = dataStore,
                     chatViewModel = chatViewModel,

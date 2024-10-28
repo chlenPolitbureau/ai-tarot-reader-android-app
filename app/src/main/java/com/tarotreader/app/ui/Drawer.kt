@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.tarotreader.app.PersonalSettings
 import com.tarotreader.app.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -46,8 +48,12 @@ fun NavDrawer(
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
     scope: CoroutineScope,
+    navController: NavHostController,
     content: @Composable () -> Unit
 ) {
+
+    val items = DrawerItems.entries
+
     DismissibleNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -55,9 +61,21 @@ fun NavDrawer(
                 Column(Modifier.fillMaxHeight()) {
                     DrawerAuthCard()
                     NavigationDrawerItem(
-//                        icon = { Icon(Icon.Default.Favorite, contentDescription = null) },
-                        label = { Text("First icon label item") },
-                        onClick = { scope.launch { drawerState.close() } },
+                        label = { Text("Personal Settings") },
+                        onClick = { scope.launch {
+                            drawerState.close()
+                            navController.navigate(PersonalSettings)
+                        } },
+                        selected = false
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Reading Settings") },
+                        onClick = { scope.launch { navController.navigate(PersonalSettings) } },
+                        selected = false
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Rate App") },
+                        onClick = { scope.launch { navController.navigate(PersonalSettings) } },
                         selected = false
                     )
                 }
@@ -88,4 +106,14 @@ fun DrawerAuthCard() {
             }
         }
     }
+}
+
+enum class DrawerItems(
+//    val icon: Int,
+    val label: String
+) {
+    ACCOUNT_SETTINGS("Personal settings"),
+    READING_SETTINGS("Reading settings"),
+    RATE_APP("Rate app"),
+    REMOVE_ADS("Remove ads")
 }
