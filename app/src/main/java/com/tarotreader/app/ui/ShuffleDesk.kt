@@ -17,63 +17,44 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tarotreader.app.model.CardViewModel
-import com.tarotreader.app.model.CardViewModelFactory
-import com.tarotreader.app.model.ChatViewModel
-import com.tarotreader.app.model.Draw
+import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
 
 @Composable
 fun ShuffleDeck (
-    draw: Draw,
+    spread: Spread,
+    cards: List<TarotCard>,
     modifier: Modifier = Modifier,
     postback: (list: List<TarotCard>) -> Unit = {},
-    chatViewModel: ChatViewModel? = null,
+    appViewModel: AppViewModel? = null,
 ) {
     var flippedCardCounter by remember { mutableStateOf(0) }
-    val drawn = draw.draw()
-    val cardViewModelFactory = CardViewModelFactory(draw.spread)
-//    val cardViewModel = ViewModelProvider(this, cardViewModelFactory)[CardViewModel::class.java]
 
-    chatViewModel?.updateSelectedCards(drawn)
+    appViewModel?.updateSelectedCards(cards)
 
     fun flipCard() {
         flippedCardCounter++
-        if (flippedCardCounter == drawn.size) {
-            postback(drawn)
+        if (flippedCardCounter == cards.size) {
+            postback(cards)
         }
     }
 
-    when (draw.spread) {
-        Spread.SINGLE_CARD -> SingleCardLayout(drawn = drawn, postback = ::flipCard)
-        Spread.THREE_CARDS -> ThreeCardsLayout(drawn = drawn, postback = ::flipCard)
-        Spread.PYRAMID -> PyramidLayout(drawn = drawn, modifier = modifier, postback = ::flipCard)
-        Spread.BROKEN_HEART -> BrokenHeartLayout(drawn = drawn, postback = ::flipCard)
-        Spread.HEALING_HEARTS -> HealingHeartsLayout(drawn = drawn, postback = ::flipCard)
+    when (spread) {
+        Spread.SINGLE_CARD -> SingleCardLayout(drawn = cards, postback = ::flipCard)
+        Spread.THREE_CARDS -> ThreeCardsLayout(drawn = cards, postback = ::flipCard)
+        Spread.PYRAMID -> PyramidLayout(drawn = cards, modifier = modifier, postback = ::flipCard)
+        Spread.BROKEN_HEART -> BrokenHeartLayout(drawn = cards, postback = ::flipCard)
+        Spread.HEALING_HEARTS -> HealingHeartsLayout(drawn = cards, postback = ::flipCard)
     }
-}
-
-@Preview
-@Composable
-fun ShuffleDeskPreview() {
-    ShuffleDeck(
-        draw = Draw(spread = Spread.PYRAMID),
-        modifier = Modifier.padding(10.dp)
-    )
 }
 
 @Composable
 fun ThreeCardsLayout(
     drawn: List<TarotCard>,
-    modifier: Modifier = Modifier,
-    postback: () -> Unit,
-    cardViewModel: CardViewModel? = null
+    postback: () -> Unit
 ) {
     ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
         val (lazyRow) = createRefs()
@@ -122,6 +103,8 @@ fun SingleCardLayout(
                 val maxWidth = (1 / drawn.size).toFloat()
                 FlippableCard(
                     front_img = drawn[index].img,
+//                    rotate = cardViewModel.rotatedState[0],
+//                    flipPostback = { cardViewModel.flipCard(0) },
                     modifier = Modifier
                         .fillParentMaxWidth(.33f)
                         .aspectRatio(1f),
@@ -139,7 +122,6 @@ fun PyramidLayout (
     postback: () -> Unit
 ) {
         Column (
-//            modifier = Modifier.fillMaxWidth()
         ) {
             Row (
                 modifier = modifier.fillMaxWidth(),
@@ -148,7 +130,9 @@ fun PyramidLayout (
                 FlippableCard(
                     front_img = drawn[0].img,
                     modifier = Modifier,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[0],
+//                    flipPostback = { cardViewModel.flipCard(0) }
                 )
             }
             Row (
@@ -157,11 +141,15 @@ fun PyramidLayout (
             ) {
                 FlippableCard(
                     front_img = drawn[1].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[1],
+//                    flipPostback = { cardViewModel.flipCard(1) }
                 )
                 FlippableCard(
                     front_img = drawn[2].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[2],
+//                    flipPostback = { cardViewModel.flipCard(2) }
                 )
             }
             Row (
@@ -170,15 +158,21 @@ fun PyramidLayout (
             ) {
                 FlippableCard(
                     front_img = drawn[3].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[3],
+//                    flipPostback = { cardViewModel.flipCard(3) }
                 )
                 FlippableCard(
                     front_img = drawn[4].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[4],
+//                    flipPostback = { cardViewModel.flipCard(4) }
                 )
                 FlippableCard(
                     front_img = drawn[5].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[5],
+//                    flipPostback = { cardViewModel.flipCard(5) }
                 )
             }
         }
@@ -211,12 +205,16 @@ fun BrokenHeartLayout (
                     FlippableCard(
                         front_img = drawn[0].img,
                         modifier = Modifier,
-                        postback = postback
+                        postback = postback,
+//                        rotate = cardViewModel.rotatedState[0],
+//                        flipPostback = { cardViewModel.flipCard(0) }
                     )
                     FlippableCard(
                         front_img = drawn[3].img,
                         modifier = Modifier,
-                        postback = postback
+                        postback = postback,
+//                        rotate = cardViewModel.rotatedState[3],
+//                        flipPostback = { cardViewModel.flipCard(3) }
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -231,17 +229,23 @@ fun BrokenHeartLayout (
                 ) {
                     FlippableCard(
                         front_img = drawn[4].img,
-                        modifier = Modifier
+                        modifier = Modifier,
+//                        rotate = cardViewModel.rotatedState[4],
+//                        flipPostback = { cardViewModel.flipCard(4) }
                     )
                     FlippableCard(
                         front_img = drawn[5].img,
                         modifier = Modifier,
-                        postback = postback
+                        postback = postback,
+//                        rotate = cardViewModel.rotatedState[5],
+//                        flipPostback = { cardViewModel.flipCard(5) }
                     )
                     FlippableCard(
                         front_img = drawn[6].img,
                         modifier = Modifier,
-                        postback = postback
+                        postback = postback,
+//                        rotate = cardViewModel.rotatedState[6],
+//                        flipPostback = { cardViewModel.flipCard(6) }
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -257,12 +261,16 @@ fun BrokenHeartLayout (
                     FlippableCard(
                         front_img = drawn[1].img,
                         modifier = Modifier,
-                        postback = postback
+                        postback = postback,
+//                        rotate = cardViewModel.rotatedState[1],
+//                        flipPostback = { cardViewModel.flipCard(1) }
                     )
                     FlippableCard(
                         front_img = drawn[2].img,
                         modifier = Modifier,
-                        postback = postback
+                        postback = postback,
+//                        rotate = cardViewModel.rotatedState[2],
+//                        flipPostback = { cardViewModel.flipCard(2) }
                     )
                 }
             }
@@ -285,11 +293,15 @@ fun HealingHeartsLayout (
             ) {
                 FlippableCard(
                     front_img = drawn[0].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[0],
+//                    flipPostback = { cardViewModel.flipCard(0) }
                 )
                 FlippableCard(
                     front_img = drawn[1].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[1],
+//                    flipPostback = { cardViewModel.flipCard(1) }
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -299,11 +311,15 @@ fun HealingHeartsLayout (
             ) {
                 FlippableCard(
                     front_img = drawn[2].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[2],
+//                    flipPostback = { cardViewModel.flipCard(2) }
                 )
                 FlippableCard(
                     front_img = drawn[3].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[3],
+//                    flipPostback = { cardViewModel.flipCard(3) }
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -313,11 +329,15 @@ fun HealingHeartsLayout (
             ) {
                 FlippableCard(
                     front_img = drawn[4].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[4],
+//                    flipPostback = { cardViewModel.flipCard(4) }
                 )
                 FlippableCard(
                     front_img = drawn[5].img,
-                    postback = postback
+                    postback = postback,
+//                    rotate = cardViewModel.rotatedState[5],
+//                    flipPostback = { cardViewModel.flipCard(5) }
                 )
             }
         }

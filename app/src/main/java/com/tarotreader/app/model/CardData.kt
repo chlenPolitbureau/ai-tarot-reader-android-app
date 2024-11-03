@@ -1,6 +1,9 @@
 package com.tarotreader.app.model
 
 import androidx.annotation.DrawableRes
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import com.tarotreader.app.R
 
 enum class Suites {
@@ -18,12 +21,12 @@ enum class Suites {
 enum class TarotCard(
     val suite: Suites,
     @DrawableRes val img: Int,
+    @DrawableRes val cover_img: Int = R.drawable.backside,
     val descriptionUpright: String? = null,
     val descriptionReversed: String? = null,
     val affiliationUpright: List<String>? = null,
     val affiliationReversed: List<String>? = null,
     var orientation: Int = 1,
-    var rotated: Boolean = false
 ) {
     The_Fool(suite = Suites.MAJOR, img = R.drawable.m00),
     The_Magician(suite = Suites.MAJOR, img = R.drawable.m01),
@@ -109,10 +112,16 @@ enum class TarotCard(
     }
 }
 
+data class MaterialCard(
+    val card: TarotCard,
+    val cardViewModel: CardViewModel = CardViewModel(),
+    var rotatedState: MutableState<Boolean> = mutableStateOf(false)
+)
+
 data class Draw(
     val spread: Spread,
     val listOfCards: List<TarotCard> = TarotCard.entries,
-    val flipChance: Double = 0.38
+    val flipChance: Double = 0.38,
 ) {
     fun draw(): List<TarotCard> {
         val drawn = listOfCards.shuffled().take(spread.nCards)

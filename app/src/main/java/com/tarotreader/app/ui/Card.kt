@@ -20,25 +20,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tarotreader.app.R
+import com.tarotreader.app.model.CardViewModel
+import com.tarotreader.app.model.MaterialCard
+import com.tarotreader.app.model.Spread
 
 @Composable
 fun FlippableCard (
     @DrawableRes front_img: Int,
+    rotate: Boolean = false,
+    index: Int = 0,
     @DrawableRes back_img: Int = R.drawable.backside,
     modifier: Modifier = Modifier,
+    flipPostback: () -> Unit = {},
     postback: () -> Unit = {}
 ) {
-    var rotated by remember { mutableStateOf(false) }
     var img by remember { mutableStateOf(back_img) }
 
     val rotation by animateFloatAsState(
-        targetValue = if (rotated) 180f else 0f,
+        targetValue = if (rotate) 180f else 0f,
         animationSpec = tween(700)
     )
 
     fun flip() {
-        rotated = !rotated
+        flipPostback()
         postback()
     }
 
@@ -55,7 +61,7 @@ fun FlippableCard (
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = modifier
-                .clickable { if (!rotated) flip() }
+                .clickable { if (!rotate) flip() }
                 .clip(RoundedCornerShape(4.dp))
                 .graphicsLayer {
                     rotationY = rotation
@@ -64,11 +70,34 @@ fun FlippableCard (
     }
 }
 
-@Preview
+
 @Composable
-fun CardWithButtonPreview() {
-    FlippableCard(
-        front_img = R.drawable.w01,
-        back_img = R.drawable.backside
+fun RotatableCard(
+    card: MaterialCard,
+    modifier: Modifier = Modifier
+) {
+    val rotation by animateFloatAsState(
+        targetValue = if (card.cardViewModel.cardRotated.value) 180f else 0f,
+        animationSpec = tween(700)
     )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(
+                if (rotation > 90f) card.card.img else card.card.cover_img
+            ),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = modifier
+                .clickable {
+                    card.cardViewModel.flipCard()
+                }
+                .clip(RoundedCornerShape(4.dp))
+                .graphicsLayer {
+                    rotationY = rotation
+                }
+            )
+    }
 }

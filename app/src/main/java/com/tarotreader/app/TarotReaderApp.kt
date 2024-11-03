@@ -3,7 +3,6 @@ package com.tarotreader.app
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -40,7 +39,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.tarotreader.app.data.BottomBarMenuItem
-import com.tarotreader.app.model.ChatViewModel
+import com.tarotreader.app.model.CardViewModel
+import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.ui.ChatView
 import com.tarotreader.app.ui.ContentTabs
 import com.tarotreader.app.ui.ContentViewPage
@@ -49,7 +49,6 @@ import com.tarotreader.app.ui.MainScreen
 import com.tarotreader.app.ui.NavDrawer
 import com.tarotreader.app.ui.PersonalSettingsScreen
 import com.tarotreader.app.ui.PredictionHistoryView
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
@@ -61,7 +60,7 @@ import java.time.format.DateTimeFormatter
 fun TarotReaderApp(
     context: Context,
     dataStore: DataStore<AppSettings>,
-    chatViewModel: ChatViewModel,
+    appViewModel: AppViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -72,7 +71,7 @@ fun TarotReaderApp(
     val formatter = DateTimeFormatter.ofPattern("MMMM, dd")
     val showBars = remember { mutableStateOf(true) }
     val showBackArrow = currentScreen != "Main"
-
+    val cardViewModel = viewModel<CardViewModel>()
     val contentType = remember { mutableStateOf("") }
 
     val dataStoreState = dataStore.data.collectAsState(
@@ -136,12 +135,13 @@ fun TarotReaderApp(
             composable<Main> {
                 MainScreen(
                     navController = navController,
-                    chatViewModel = chatViewModel
+                    appViewModel = appViewModel,
+                    cardViewModel = cardViewModel
                 )
             }
             composable<Chat> {
                 ChatView(
-                    chatViewModel = chatViewModel
+                    appViewModel = appViewModel
                 )
             }
             composable<Learn> {
@@ -152,7 +152,7 @@ fun TarotReaderApp(
             composable<PersonalSettings> {
                 PersonalSettingsScreen(
                     navController = navController,
-                    chatViewModel = chatViewModel
+                    appViewModel = appViewModel
                 )
             }
             composable<Journal> {

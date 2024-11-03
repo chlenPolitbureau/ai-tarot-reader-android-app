@@ -1,7 +1,6 @@
 package com.tarotreader.app.ui
 
 import android.os.Build
-import android.widget.Spinner
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,12 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -36,10 +33,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.tarotreader.app.model.ChatViewModel
+import com.tarotreader.app.model.AppViewModel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -50,9 +46,9 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun PersonalSettingsScreen(
     navController: NavHostController? = null,
-    chatViewModel: ChatViewModel
+    appViewModel: AppViewModel
 ) {
-    var nm = chatViewModel.currentUserName.collectAsState(initial = "aa").value
+    var nm = appViewModel.currentUserName.collectAsState(initial = "aa").value
     var name by remember { mutableStateOf(nm) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var selectedGender by remember { mutableStateOf("") }
@@ -105,7 +101,7 @@ fun PersonalSettingsScreen(
 
         Button(
             onClick = {
-                chatViewModel.updatePersonalSettings(
+                appViewModel.updatePersonalSettings(
                 name = name,
                 gender = selectedGender,
                 dateOfBirth = selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))

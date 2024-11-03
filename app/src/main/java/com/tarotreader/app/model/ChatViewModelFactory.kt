@@ -10,8 +10,8 @@ class ChatViewModelFactory(
     private val dataStore: DataStore<AppSettings>
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ChatViewModel::class.java))
-            return ChatViewModel(dataStore) as T
+        if (modelClass.isAssignableFrom(AppViewModel::class.java))
+            return AppViewModel(dataStore) as T
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

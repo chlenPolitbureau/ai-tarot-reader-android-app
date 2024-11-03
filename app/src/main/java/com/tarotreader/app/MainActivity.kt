@@ -7,11 +7,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.collectAsState
 import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tarotreader.app.model.ChatViewModel
+import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.ChatViewModelFactory
 import com.tarotreader.app.model.Prediction
 import com.tarotreader.app.ui.theme.TarotReaderTheme
@@ -28,10 +26,10 @@ class MainActivity : ComponentActivity() {
             TarotReaderTheme {
                 val dataStore = dataStore
                 val viewModelFactory = ChatViewModelFactory(dataStore)
-                val chatViewModel = ViewModelProvider(this, viewModelFactory)[ChatViewModel::class.java]
+                val appViewModel = ViewModelProvider(this, viewModelFactory)[AppViewModel::class.java]
                 TarotReaderApp(
                     dataStore = dataStore,
-                    chatViewModel = chatViewModel,
+                    appViewModel = appViewModel,
                     context = this
                 )
             }

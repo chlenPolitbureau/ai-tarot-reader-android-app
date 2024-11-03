@@ -1,61 +1,67 @@
 package com.tarotreader.app.ui
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.tarotreader.app.R
-import com.tarotreader.app.model.ChatViewModel
-import com.tarotreader.app.model.Draw
-import com.tarotreader.app.model.Spread
+import com.tarotreader.app.model.CardViewModel
+import com.tarotreader.app.model.AppViewModel
+import com.tarotreader.app.model.MaterialCard
+import com.tarotreader.app.model.SomeViewModel
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
-    title: String = "Main",
     navController: NavHostController,
-    chatViewModel: ChatViewModel
+    appViewModel: AppViewModel,
+    cardViewModel: CardViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .padding(6.dp)
-    ) {
-        val manaPoints = chatViewModel.currentManaPoints.collectAsState(initial = 0).value
-        val scope = rememberCoroutineScope()
+    val viewModel = viewModel<SomeViewModel>()
 
-        WelcomeMessage(
-            username = chatViewModel.currentUserName.collectAsState(initial = "Guest").value,
+    Surface (
+        modifier = Modifier.fillMaxSize(),
+        color = viewModel.backgroundColor
+    ) {
+        Column(
             modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
-        )
-        
-        Text("Current mana balance: $manaPoints")
-        
-        Button(
-            onClick = {
-                scope.launch {
-                    chatViewModel.updateMana(manaPoints, 2)
+                .padding(6.dp)
+        ) {
+
+            WelcomeMessage(
+                username = appViewModel.currentUserName.collectAsState(initial = "Guest").value,
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+            )
+
+            RotatableCard(
+                card = MaterialCard(
+                    card = TarotCard.Page_of_Cups
+                ),
+            )
+
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.weight(1f)
+            ) {
+                Button(
+                    onClick = {
+                        viewModel.changeBackgroundColor()
+                    }
+                ) {
+                    Text(text = "Add Shuffle")
                 }
             }
-        ) {
-            Text(text = "Deduct mana")
         }
     }
 }
