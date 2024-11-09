@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 //    id("com.google.protobuf") version "0.9.1"
 //    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
 }
@@ -82,6 +84,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     implementation("androidx.datastore:datastore:1.1.1")
     implementation ("com.google.protobuf:protobuf-javalite:3.10.0")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation(libs.material)
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
@@ -95,4 +99,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(kotlin("script-runtime"))
+}
+
+kapt {
+    correctErrorTypes = true
 }

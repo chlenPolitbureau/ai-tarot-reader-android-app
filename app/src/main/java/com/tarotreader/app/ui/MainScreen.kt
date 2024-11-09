@@ -9,14 +9,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.tarotreader.app.model.CardViewModel
 import com.tarotreader.app.model.AppViewModel
-import com.tarotreader.app.model.MaterialCard
 import com.tarotreader.app.model.SomeViewModel
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
@@ -25,7 +27,6 @@ import com.tarotreader.app.ui.theme.Typography
 fun MainScreen(
     navController: NavHostController,
     appViewModel: AppViewModel,
-    cardViewModel: CardViewModel
 ) {
     val viewModel = viewModel<SomeViewModel>()
 
@@ -33,6 +34,10 @@ fun MainScreen(
         modifier = Modifier.fillMaxSize(),
         color = viewModel.backgroundColor
     ) {
+
+        val someViewModel = viewModel<SomeViewModel>()
+        val otherViewModel = viewModel<SomeViewModel>()
+
         Column(
             modifier = Modifier
                 .padding(6.dp)
@@ -44,11 +49,13 @@ fun MainScreen(
                     .align(alignment = Alignment.CenterHorizontally)
             )
 
-            RotatableCard(
-                card = MaterialCard(
-                    card = TarotCard.Page_of_Cups
-                ),
+            RCard(
+                card = TarotCard.The_Fool,
+                n = 0,
+                rotatedState = someViewModel.cardState[0],
+                flip = someViewModel::flipOneCard
             )
+
 
             Row(
                 verticalAlignment = Alignment.Bottom,

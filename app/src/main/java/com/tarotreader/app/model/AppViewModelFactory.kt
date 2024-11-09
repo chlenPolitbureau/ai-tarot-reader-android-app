@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.tarotreader.app.AppSettings
 
 @Suppress("UNCHECKED_CAST")
-class ChatViewModelFactory(
+class AppViewModelFactory(
     private val dataStore: DataStore<AppSettings>
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

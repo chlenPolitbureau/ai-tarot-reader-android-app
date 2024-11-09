@@ -10,7 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModelProvider
 import com.tarotreader.app.model.AppViewModel
-import com.tarotreader.app.model.ChatViewModelFactory
+import com.tarotreader.app.model.AppViewModelFactory
 import com.tarotreader.app.model.Prediction
 import com.tarotreader.app.ui.theme.TarotReaderTheme
 import kotlinx.collections.immutable.mutate
@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TarotReaderTheme {
                 val dataStore = dataStore
-                val viewModelFactory = ChatViewModelFactory(dataStore)
+                val viewModelFactory = AppViewModelFactory(dataStore)
                 val appViewModel = ViewModelProvider(this, viewModelFactory)[AppViewModel::class.java]
                 TarotReaderApp(
                     dataStore = dataStore,

@@ -19,43 +19,60 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.tarotreader.app.model.AppViewModel
+import com.tarotreader.app.model.ChatViewModel
+import com.tarotreader.app.model.Draw
+import com.tarotreader.app.model.SomeViewModel
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
 
 @Composable
 fun ShuffleDeck (
-    spread: Spread,
-    cards: List<TarotCard>,
+//    chatViewModel: ChatViewModel,
+    someViewModel: SomeViewModel,
+    n: Int,
     modifier: Modifier = Modifier,
-    postback: (list: List<TarotCard>) -> Unit = {},
-    appViewModel: AppViewModel? = null,
+    flip: (Int, Int) -> Unit,
+    postback: (List<TarotCard>) -> Unit
 ) {
     var flippedCardCounter by remember { mutableStateOf(0) }
+//    val drawVal = chatViewModel.messages[n].draw
 
-    appViewModel?.updateSelectedCards(cards)
-
+    val draw = someViewModel.draw
     fun flipCard() {
         flippedCardCounter++
-        if (flippedCardCounter == cards.size) {
-            postback(cards)
+        if (flippedCardCounter == draw.spread.nCards) {
+//            postback(cards)
         }
     }
 
-    when (spread) {
-        Spread.SINGLE_CARD -> SingleCardLayout(drawn = cards, postback = ::flipCard)
-        Spread.THREE_CARDS -> ThreeCardsLayout(drawn = cards, postback = ::flipCard)
-        Spread.PYRAMID -> PyramidLayout(drawn = cards, modifier = modifier, postback = ::flipCard)
-        Spread.BROKEN_HEART -> BrokenHeartLayout(drawn = cards, postback = ::flipCard)
-        Spread.HEALING_HEARTS -> HealingHeartsLayout(drawn = cards, postback = ::flipCard)
+    when (draw.spread) {
+        Spread.SINGLE_CARD -> SingleCardLayout(drawn = draw.listOfCards, postback = ::flipCard)
+        Spread.THREE_CARDS -> ThreeCardsLayout(draw = draw, n, flip, postback = ::flipCard)
+        Spread.PYRAMID -> PyramidLayout(drawn = draw.listOfCards, modifier = modifier, postback = ::flipCard)
+        Spread.BROKEN_HEART -> BrokenHeartLayout(drawn = draw.listOfCards, postback = ::flipCard)
+        Spread.HEALING_HEARTS -> HealingHeartsLayout(drawn = draw.listOfCards, postback = ::flipCard)
     }
+
+//    when (drawVal?.spread) {
+//        Spread.SINGLE_CARD -> SingleCardLayout(drawn = drawVal.listOfCards, postback = ::flipCard)
+//        Spread.THREE_CARDS -> ThreeCardsLayout(draw = drawVal, n, flip, postback = ::flipCard)
+//        Spread.PYRAMID -> PyramidLayout(drawn = drawVal.listOfCards, modifier = modifier, postback = ::flipCard)
+//        Spread.BROKEN_HEART -> BrokenHeartLayout(drawn = drawVal.listOfCards, postback = ::flipCard)
+//        Spread.HEALING_HEARTS -> HealingHeartsLayout(drawn = drawVal.listOfCards, postback = ::flipCard)
+//        null -> TODO()
+//    }
 }
 
 @Composable
 fun ThreeCardsLayout(
-    drawn: List<TarotCard>,
+    draw: Draw,
+    n: Int,
+    flip: (Int, Int) -> Unit,
     postback: () -> Unit
 ) {
+    val drawM by remember {
+        mutableStateOf(draw)
+    }
     ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
         val (lazyRow) = createRefs()
         LazyRow(
@@ -68,10 +85,12 @@ fun ThreeCardsLayout(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            items(drawn.size) { index ->
-                val maxWidth = (1 / drawn.size).toFloat()
-                FlippableCard(
-                    front_img = drawn[index].img,
+            items(draw.listOfCards.size) { index ->
+                val maxWidth = (1 / draw.listOfCards.size).toFloat()
+                RotatableCard(
+                    card = draw.listOfCards[index],
+                    rotatedState = drawM.cardsFlipState[index],
+                    flip = { flip(n, index) },
                     modifier = Modifier
                         .fillParentMaxWidth(.33f)
                         .aspectRatio(1f),

@@ -49,6 +49,8 @@ import com.tarotreader.app.R
 import com.tarotreader.app.model.Author
 import com.tarotreader.app.model.ChatMessage
 import com.tarotreader.app.model.AppViewModel
+import com.tarotreader.app.model.ChatViewModel
+import com.tarotreader.app.model.Draw
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotReader
 import kotlinx.coroutines.delay
@@ -57,7 +59,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatView(
     title: String = "Reading",
-    appViewModel: AppViewModel
+    appViewModel: AppViewModel,
+    chatViewModel: ChatViewModel
 ) {
 
     Column (
@@ -72,10 +75,11 @@ fun ChatView(
             )
         )
         EndFirstLazyColumn(
-            messages = appViewModel.messages,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            chatViewModel = chatViewModel
         )
         ChatController(
+            chatViewModel = chatViewModel,
             appViewModel = appViewModel,
             modifier = Modifier.weight(1f),
         )
@@ -84,24 +88,25 @@ fun ChatView(
 
 @Composable
 fun ChatController(
+    chatViewModel: ChatViewModel,
     appViewModel: AppViewModel,
     modifier: Modifier = Modifier,
 ) {
     val userManaBalance = appViewModel.currentManaPoints.collectAsState(initial = 30).value
-    val currentSpread = appViewModel.predictionSpread
+    val currentSpread = chatViewModel.predictionSpread
     val scope = rememberCoroutineScope()
 
     Column (
     ) {
-        if (appViewModel.showController.value) {
-            if (appViewModel.ifExpectingPrediction.value &&
-                !appViewModel.spreadSelected.value) {
+        if (chatViewModel.showController.value) {
+            if (chatViewModel.ifExpectingPrediction.value &&
+                !chatViewModel.spreadSelected.value) {
                 ChooseSpread(
-                    appViewModel = appViewModel,
+                    chatViewModel = chatViewModel,
                 )
             }
-            else if (appViewModel.ifExpectingPrediction.value &&
-                appViewModel.spreadSelected.value) {
+            else if (chatViewModel.ifExpectingPrediction.value &&
+                chatViewModel.spreadSelected.value) {
                 ChatInput(
                     onMessageSend = {
                         scope.launch {
@@ -109,7 +114,7 @@ fun ChatController(
                                 balance = userManaBalance,
                                 manaPoints = currentSpread.value.manaCost * -1
                             )
-                            appViewModel.addMessage(
+                            chatViewModel.addMessage(
                                 ChatMessage(
                                     text = it,
                                     author = Author("user")
@@ -118,14 +123,14 @@ fun ChatController(
                         }
                     }
                 )
-                if (appViewModel.showChips.value) {
+                if (chatViewModel.showChips.value) {
                     SuggestedQuestions(
                         questionList = listOf(
                             "Will I succeed in my career?",
                             "What's the weather will be tomorrow?",
                             "Should I go to the gym today?"
                         ),
-                        appViewModel = appViewModel
+                        chatViewModel = chatViewModel
                     )
                 }
             } else {
@@ -135,8 +140,8 @@ fun ChatController(
                     ElevatedButton(
                         modifier = modifier,
                         onClick = {
-                            appViewModel.ifExpectingPrediction.value =
-                                !appViewModel.ifExpectingPrediction.value
+                            chatViewModel.ifExpectingPrediction.value =
+                                !chatViewModel.ifExpectingPrediction.value
                         }
                     ) { Text("Next prediction") }
                 }
@@ -148,7 +153,7 @@ fun ChatController(
 @Preview
 @Composable
 fun ChooseSpread(
-    appViewModel: AppViewModel,
+    chatViewModel: ChatViewModel,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .padding(6.dp)
@@ -173,7 +178,7 @@ fun ChooseSpread(
                 modifier = Modifier.defaultMinSize(
                     minWidth = 160.dp
                 ) ,
-                onClick = { appViewModel.updateSelectedSpread(
+                onClick = { chatViewModel.updateSelectedSpread(
                     spreads[0]
                 ) }
             ) {
@@ -183,7 +188,7 @@ fun ChooseSpread(
                 modifier = Modifier.defaultMinSize(
                     minWidth = 160.dp
                 ),
-                onClick = { appViewModel.updateSelectedSpread(
+                onClick = { chatViewModel.updateSelectedSpread(
                     spreads[1]
                 ) }
             ) {
@@ -195,21 +200,21 @@ fun ChooseSpread(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             ElevatedButton(
-                onClick = { appViewModel.updateSelectedSpread(
+                onClick = { chatViewModel.updateSelectedSpread(
                     spreads[2]
                 ) }
             ) {
                 Text(spreads[2].description)
             }
             ElevatedButton(
-                onClick = { appViewModel.updateSelectedSpread(
+                onClick = { chatViewModel.updateSelectedSpread(
                     spreads[3]
                 ) }
             ) {
                 Text(spreads[3].description)
             }
             ElevatedButton(
-                onClick = { appViewModel.updateSelectedSpread(
+                onClick = { chatViewModel.updateSelectedSpread(
                     spreads[4]
                 ) }
             ) {
@@ -223,7 +228,7 @@ fun ChooseSpread(
 fun SuggestedQuestions(
     questionList: List<String>,
     modifier: Modifier = Modifier,
-    appViewModel: AppViewModel
+    chatViewModel: ChatViewModel
 ) {
     LazyColumn (
         verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -234,7 +239,7 @@ fun SuggestedQuestions(
             index ->
             FilterChipSample(
                 text = questionList[index],
-                appViewModel = appViewModel
+                chatViewModel = chatViewModel
             )
         }
     }
@@ -244,14 +249,14 @@ fun SuggestedQuestions(
 @Composable
 fun FilterChipSample(
     text: String,
-    appViewModel: AppViewModel
+    chatViewModel: ChatViewModel
 ) {
     var selected by remember { mutableStateOf(false) }
     FilterChip(
         selected = selected,
-        onClick = { appViewModel.clickChip(text)
-                    appViewModel.ifExpectingPrediction.value =
-                        !appViewModel.ifExpectingPrediction.value
+        onClick = { chatViewModel.clickChip(text)
+                    chatViewModel.ifExpectingPrediction.value =
+                        !chatViewModel.ifExpectingPrediction.value
                   },
         label = { Text(text) },
         leadingIcon =
@@ -271,8 +276,8 @@ fun FilterChipSample(
 
 @Composable
 fun EndFirstLazyColumn(
-    messages: List<ChatMessage>,
-    modifier: Modifier
+    modifier: Modifier,
+    chatViewModel: ChatViewModel
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -282,8 +287,17 @@ fun EndFirstLazyColumn(
         modifier = modifier
             .padding(top = 8.dp)
     ) {
-        items(messages.size) { index ->
-            Message(message = messages[index])
+        items(chatViewModel.messages.size) { index ->
+            if (chatViewModel.messages[index].draw != null) {
+                Message(message = chatViewModel.messages[index])
+                DrawMessage(
+                    n = index,
+                    chatViewModel = chatViewModel,
+                    postback = { chatViewModel.makePrediction() }
+                )
+            } else {
+                Message(message = chatViewModel.messages[index])
+            }
         }
     }
 
@@ -370,53 +384,33 @@ fun ChatItemBubble(
 }
 
 @Composable
+fun DrawMessage(
+    n: Int,
+    chatViewModel: ChatViewModel,
+    postback: () -> Unit
+) {
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 8.dp)
+    ) {
+        Card {
+            Shuffle(
+                n = n,
+                chatViewModel = chatViewModel,
+                postback = postback
+            )
+        }
+    }
+}
+
+@Composable
 fun Message(
     message: ChatMessage,
 ) {
-
-    val showOptions by remember { mutableStateOf(message.showOptions) }
-
     Column {
         ChatItemBubble(message = message)
-        if (message.ifFullWidth) {
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp)
-            ) {
-                Card {
-                    message.options?.get(0)?.content?.invoke()
-                }
-            }
         }
-        if (message.options != null && !message.ifFullWidth && showOptions) {
-            LazyRow (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(18.dp)
-            ) {
-                items(message.options.size) { index ->
-                    Card (
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 6.dp
-                        ),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.Gray,
-                        ),
-                        border = BorderStroke(1.dp, Color.Black),
-                        modifier = Modifier
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(8.dp)
-                        ) {
-                            message.options[index].content()
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 @Composable

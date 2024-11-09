@@ -112,28 +112,12 @@ enum class TarotCard(
     }
 }
 
-data class MaterialCard(
-    val card: TarotCard,
-    val cardViewModel: CardViewModel = CardViewModel(),
-    var rotatedState: MutableState<Boolean> = mutableStateOf(false)
-)
-
 data class Draw(
     val spread: Spread,
-    val listOfCards: List<TarotCard> = TarotCard.entries,
-    val flipChance: Double = 0.38,
+    val listOfCards: List<TarotCard>,
+    val postback: () -> Unit = {}
 ) {
-    fun draw(): List<TarotCard> {
-        val drawn = listOfCards.shuffled().take(spread.nCards)
-        return drawn.map {
-            if (Math.random() < flipChance) {
-                it.orientation = -1
-                it
-            } else {
-                it
-            }
-        }
-    }
+    var cardsFlipState = (1..spread.nCards).map { false }.toMutableList()
 }
 
 enum class Spread(
@@ -141,7 +125,8 @@ enum class Spread(
     val description: String,
     val nCards: Int,
     val affiliation: SpreadAffiliation,
-    val manaCost: Int
+    val manaCost: Int,
+    private val flipChance: Double = 0.38,
 ) {
     SINGLE_CARD(schemeImg = R.drawable.single_card, description = "Single Card", nCards = 1, affiliation = SpreadAffiliation.CLASSIC, manaCost = 3),
     THREE_CARDS(schemeImg = R.drawable.three_card, description = "Three Card", nCards = 3, affiliation = SpreadAffiliation.CLASSIC, manaCost = 4),
@@ -151,6 +136,18 @@ enum class Spread(
 
     override fun toString(): String {
         return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
+    }
+
+    fun draw(): List<TarotCard> {
+        val drawn = TarotCard.entries.shuffled().take(nCards)
+        return drawn.map {
+            if (Math.random() < flipChance) {
+                it.orientation = -1
+                it
+            } else {
+                it
+            }
+        }
     }
 }
 

@@ -3,9 +3,11 @@ package com.tarotreader.app
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.DrawerState
@@ -31,6 +33,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -41,6 +45,7 @@ import androidx.navigation.toRoute
 import com.tarotreader.app.data.BottomBarMenuItem
 import com.tarotreader.app.model.CardViewModel
 import com.tarotreader.app.model.AppViewModel
+import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.ui.ChatView
 import com.tarotreader.app.ui.ContentTabs
 import com.tarotreader.app.ui.ContentViewPage
@@ -71,7 +76,6 @@ fun TarotReaderApp(
     val formatter = DateTimeFormatter.ofPattern("MMMM, dd")
     val showBars = remember { mutableStateOf(true) }
     val showBackArrow = currentScreen != "Main"
-    val cardViewModel = viewModel<CardViewModel>()
     val contentType = remember { mutableStateOf("") }
 
     val dataStoreState = dataStore.data.collectAsState(
@@ -79,11 +83,11 @@ fun TarotReaderApp(
     )
 
     val userManaPoints = dataStoreState.value.manaPoints
+    val userName = dataStoreState.value.userName
 
     fun updateContentType(name: String) {
         contentType.value = name
     }
-
 
     if (currentScreen == "Intro") {
             showBars.value = false
@@ -106,7 +110,8 @@ fun TarotReaderApp(
                     currentScreen = screenTitle.value,
                     navController = navController,
                     showBackArrow = showBackArrow,
-                    userManaPoints = userManaPoints
+                    userManaPoints = userManaPoints,
+                    username = userName
                 )
             }
         },
@@ -135,13 +140,20 @@ fun TarotReaderApp(
             composable<Main> {
                 MainScreen(
                     navController = navController,
-                    appViewModel = appViewModel,
-                    cardViewModel = cardViewModel
+                    appViewModel = appViewModel
                 )
             }
             composable<Chat> {
+                val chatViewModel = viewModel<ChatViewModel>(
+                    factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return ChatViewModel(appViewModel) as T
+                        }
+                    }
+                )
                 ChatView(
-                    appViewModel = appViewModel
+                    appViewModel = appViewModel,
+                    chatViewModel = chatViewModel
                 )
             }
             composable<Learn> {
@@ -201,16 +213,23 @@ fun TopAppBarClass(
             }
         },
         actions = {
+            Icon(
+                painter = painterResource(id = R.drawable.coins),
+                contentDescription = "Mana",
+                modifier = Modifier.padding(2.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = manaPoints.toString(),
                 textAlign = TextAlign.End,
                 modifier = Modifier
             )
+            Spacer(modifier = Modifier.width(16.dp))
             IconButton(
                 onClick = { scope.launch { drawerState.open() } },
                 content = {
                     Icon(
-                        painter = painterResource(R.drawable.playing_cards_svgrepo_com),
+                        painter = painterResource(R.drawable.list),
                         contentDescription = "Avatar",
                         modifier = Modifier.padding(2.dp)
                     )
@@ -230,7 +249,8 @@ fun TarotReaderAppBar(
     showBackArrow: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    userManaPoints: Int
+    userManaPoints: Int,
+    username: String
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -238,6 +258,7 @@ fun TarotReaderAppBar(
     TopAppBarClass(currentScreen, modifier, drawerState, navController, showBackArrow, userManaPoints)
     NavDrawer(
         drawerState = drawerState,
+        username = username,
         scope = scope,
         navController = navController,
     ) {
@@ -253,22 +274,22 @@ fun RealBottomBar(
     val items = listOf(
         BottomBarMenuItem(
             text = R.string.home,
-            icon = R.drawable.playing_cards_svgrepo_com,
+            icon = R.drawable.houseline,
             navigate = { navController.navigate(Main) }
         ),
         BottomBarMenuItem(
-            text = R.string.chat,
-            icon = R.drawable.playing_cards_svgrepo_com,
+            text = R.string.Reading,
+            icon = R.drawable.sparkle,
             navigate = { navController.navigate(Chat) }
         ),
         BottomBarMenuItem(
             text = R.string.learn,
-            icon = R.drawable.learn_svgrepo_com,
+            icon = R.drawable.graduationcap,
             navigate = { navController.navigate(Learn) }
         ),
         BottomBarMenuItem(
             text = R.string.journal,
-            icon = R.drawable.learn_svgrepo_com,
+            icon = R.drawable.scroll,
             navigate = { navController.navigate(Journal) }
         )
 

@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tarotreader.app.R
 import com.tarotreader.app.model.CardViewModel
-import com.tarotreader.app.model.MaterialCard
 import com.tarotreader.app.model.Spread
+import com.tarotreader.app.model.TarotCard
 
 @Composable
 fun FlippableCard (
@@ -37,6 +37,7 @@ fun FlippableCard (
     postback: () -> Unit = {}
 ) {
     var img by remember { mutableStateOf(back_img) }
+    var rotated by remember { mutableStateOf(rotate) }
 
     val rotation by animateFloatAsState(
         targetValue = if (rotate) 180f else 0f,
@@ -44,6 +45,7 @@ fun FlippableCard (
     )
 
     fun flip() {
+        rotated = !rotated
         flipPostback()
         postback()
     }
@@ -73,11 +75,15 @@ fun FlippableCard (
 
 @Composable
 fun RotatableCard(
-    card: MaterialCard,
-    modifier: Modifier = Modifier
+    card: TarotCard,
+    rotatedState: Boolean,
+    flip: () -> Unit,
+    modifier: Modifier = Modifier,
+    postback: () -> Unit = {}
 ) {
+    var rotated by remember { mutableStateOf(rotatedState) }
     val rotation by animateFloatAsState(
-        targetValue = if (card.cardViewModel.cardRotated.value) 180f else 0f,
+        targetValue = if (rotated) 180f else 0f,
         animationSpec = tween(700)
     )
 
@@ -86,18 +92,55 @@ fun RotatableCard(
     ) {
         Image(
             painter = painterResource(
-                if (rotation > 90f) card.card.img else card.card.cover_img
+                if (rotation > 90f) card.img else card.cover_img
             ),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = modifier
                 .clickable {
-                    card.cardViewModel.flipCard()
+                    flip() // change rotatedState in viewmodel
+                    postback() // incremental to counter
                 }
                 .clip(RoundedCornerShape(4.dp))
                 .graphicsLayer {
                     rotationY = rotation
                 }
             )
+    }
+}
+
+@Composable
+fun RCard(
+    card: TarotCard,
+    n: Int,
+    rotatedState: Boolean,
+    flip: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    postback: () -> Unit = {}
+) {
+    val rotation by animateFloatAsState(
+        targetValue = if (rotatedState) 180f else 0f,
+        animationSpec = tween(700)
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(
+                if (rotation > 90f) card.img else card.cover_img
+            ),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = modifier
+                .clickable {
+                    flip(n)
+                    postback()
+                }
+                .clip(RoundedCornerShape(4.dp))
+                .graphicsLayer {
+                    rotationY = rotation
+                }
+        )
     }
 }
