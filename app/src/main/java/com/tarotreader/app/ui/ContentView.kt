@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tarotreader.app.R
+import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
 
@@ -41,6 +42,10 @@ fun ContentViewPage(
         "card" -> {
             postback("Card")
             CardDescriptionViewPage(cardName = id ?: "", navController = navController!!)
+        }
+        "spread" -> {
+            postback("Spread")
+            LayoutDescriptionViewPage(spread = Spread.valueOf(id ?: ""))
         }
     }
     }
@@ -108,6 +113,38 @@ fun CardDescriptionViewPage(
 }
 
 @Composable
-fun LayoutDescriptionViewPage() {
-
+fun LayoutDescriptionViewPage(
+    spread: Spread
+) {
+    Box(
+        modifier = Modifier
+            .height(260.dp)
+            .fillMaxWidth()
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_horizontal),
+            contentDescription = "",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+            alpha = 0.33f
+        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = spread.schemeImg),
+                contentDescription = "",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .height(250.dp)
+                    .padding(10.dp)
+            )
+        }
+    }
+    Text(
+        text = spread.toString(),
+        style = Typography.titleSmall,
+        modifier = Modifier.padding(10.dp)
+    )
 }

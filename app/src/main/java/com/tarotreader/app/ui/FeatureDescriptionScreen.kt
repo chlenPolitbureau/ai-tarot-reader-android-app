@@ -1,5 +1,6 @@
 package com.tarotreader.app.ui
 
+import android.content.SharedPreferences
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,11 +35,12 @@ import com.tarotreader.app.ui.theme.Typography
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeatureDescriptionScreen(
+    sharedPrefs: SharedPreferences,
     featureList : List<Feature> = FeaturesDataSource.features,
     onNextButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
+    sharedPrefs.edit().putBoolean("isFirstLaunch", false).apply()
     val pagerState = rememberPagerState { featureList.count() }
 
     Column(
@@ -135,12 +137,4 @@ fun PageIndicator(pageCount: Int, currentPage: Int, modifier: Modifier) {
             IndicatorDots(isSelected = it == currentPage, modifier= modifier)
         }
     }
-}
-
-@Preview
-@Composable
-fun FeatureDescriptionScreenPreview() {
-    FeatureDescriptionScreen(
-        onNextButtonClicked = {}
-    )
 }

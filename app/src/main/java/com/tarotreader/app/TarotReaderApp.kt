@@ -1,6 +1,7 @@
 package com.tarotreader.app
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Spacer
@@ -63,7 +64,7 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TarotReaderApp(
-    context: Context,
+    sharedPrefs: SharedPreferences,
     dataStore: DataStore<AppSettings>,
     appViewModel: AppViewModel,
     navController: NavHostController = rememberNavController()
@@ -85,6 +86,8 @@ fun TarotReaderApp(
     val userManaPoints = dataStoreState.value.manaPoints
     val userName = dataStoreState.value.userName
 
+    val isFirstLaunch = sharedPrefs.getBoolean("isFirstLaunch", true)
+
     fun updateContentType(name: String) {
         contentType.value = name
     }
@@ -103,85 +106,172 @@ fun TarotReaderApp(
         screenTitle.value = currentScreen
     }
 
-    Scaffold(
-        topBar = {
-            if(showBars.value) {
-                TarotReaderAppBar(
-                    currentScreen = screenTitle.value,
-                    navController = navController,
-                    showBackArrow = showBackArrow,
-                    userManaPoints = userManaPoints,
-                    username = userName
-                )
+    if(isFirstLaunch) {
+        Scaffold(
+            topBar = {
+                if(showBars.value) {
+                    TarotReaderAppBar(
+                        currentScreen = screenTitle.value,
+                        navController = navController,
+                        showBackArrow = showBackArrow,
+                        userManaPoints = userManaPoints,
+                        username = userName
+                    )
+                }
+            },
+            bottomBar = {
+                if(showBars.value) {
+                    RealBottomBar(
+                        currentScreen = currentScreen,
+                        navController = navController
+                    )
+                }
             }
-        },
-        bottomBar = {
-            if(showBars.value) {
-                RealBottomBar(
-                    currentScreen = currentScreen,
-                    navController = navController
-                )
+        ) {
+                innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Intro,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable<Intro> {
+                    FeatureDescriptionScreen(
+                        onNextButtonClicked = {
+                            navController.navigate(Main)
+                        },
+                        sharedPrefs = sharedPrefs
+                    )
+                }
+                composable<Main> {
+                    MainScreen(
+                        navController = navController,
+                        appViewModel = appViewModel
+                    )
+                }
+                composable<Chat> {
+                    val chatViewModel = viewModel<ChatViewModel>(
+                        factory = object : ViewModelProvider.Factory {
+                            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                                return ChatViewModel(appViewModel) as T
+                            }
+                        }
+                    )
+                    ChatView(
+                        appViewModel = appViewModel,
+                        chatViewModel = chatViewModel
+                    )
+                }
+                composable<Learn> {
+                    ContentTabs(
+                        navController = navController
+                    )
+                }
+                composable<PersonalSettings> {
+                    PersonalSettingsScreen(
+                        navController = navController,
+                        appViewModel = appViewModel
+                    )
+                }
+                composable<Journal> {
+                    PredictionHistoryView(
+                        predictions = dataStoreState.value.predictions,
+//                    navController = navController
+                    )
+                }
+                composable<Content> {
+                    val args = it.toRoute<Content>()
+                    ContentViewPage(
+                        type = args.type,
+                        id = args.id,
+                        postback = ::updateContentType,
+                        onClose = {},
+                        navController = navController
+                    )
+                }
             }
         }
-    ) {
-        innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Intro,
-            modifier = Modifier.padding(innerPadding)
+    } else {
+        Scaffold(
+            topBar = {
+                if(showBars.value) {
+                    TarotReaderAppBar(
+                        currentScreen = screenTitle.value,
+                        navController = navController,
+                        showBackArrow = showBackArrow,
+                        userManaPoints = userManaPoints,
+                        username = userName
+                    )
+                }
+            },
+            bottomBar = {
+                if(showBars.value) {
+                    RealBottomBar(
+                        currentScreen = currentScreen,
+                        navController = navController
+                    )
+                }
+            }
         ) {
-            composable<Intro> {
-                FeatureDescriptionScreen(
-                    onNextButtonClicked = {
-                        navController.navigate(Main)
-                    }
-                )
-            }
-            composable<Main> {
-                MainScreen(
-                    navController = navController,
-                    appViewModel = appViewModel
-                )
-            }
-            composable<Chat> {
-                val chatViewModel = viewModel<ChatViewModel>(
-                    factory = object : ViewModelProvider.Factory {
-                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return ChatViewModel(appViewModel) as T
+                innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Main,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable<Intro> {
+                    FeatureDescriptionScreen(
+                        onNextButtonClicked = {
+                            navController.navigate(Main)
+                        },
+                        sharedPrefs = sharedPrefs
+                    )
+                }
+                composable<Main> {
+                    MainScreen(
+                        navController = navController,
+                        appViewModel = appViewModel
+                    )
+                }
+                composable<Chat> {
+                    val chatViewModel = viewModel<ChatViewModel>(
+                        factory = object : ViewModelProvider.Factory {
+                            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                                return ChatViewModel(appViewModel) as T
+                            }
                         }
-                    }
-                )
-                ChatView(
-                    appViewModel = appViewModel,
-                    chatViewModel = chatViewModel
-                )
-            }
-            composable<Learn> {
-                ContentTabs(
-                    navController = navController
-                )
-            }
-            composable<PersonalSettings> {
-                PersonalSettingsScreen(
-                    navController = navController,
-                    appViewModel = appViewModel
-                )
-            }
-            composable<Journal> {
-                PredictionHistoryView(
-                    predictions = dataStoreState.value.predictions,
+                    )
+                    ChatView(
+                        appViewModel = appViewModel,
+                        chatViewModel = chatViewModel
+                    )
+                }
+                composable<Learn> {
+                    ContentTabs(
+                        navController = navController
+                    )
+                }
+                composable<PersonalSettings> {
+                    PersonalSettingsScreen(
+                        navController = navController,
+                        appViewModel = appViewModel
+                    )
+                }
+                composable<Journal> {
+                    PredictionHistoryView(
+                        predictions = dataStoreState.value.predictions,
 //                    navController = navController
-                )
-            }
-            composable<Content> {
-                val args = it.toRoute<Content>()
-                ContentViewPage(
-                    type = args.type,
-                    id = args.id,
-                    postback = ::updateContentType,
-                    onClose = {},
-                    navController = navController
-                )
+                    )
+                }
+                composable<Content> {
+                    val args = it.toRoute<Content>()
+                    ContentViewPage(
+                        type = args.type,
+                        id = args.id,
+                        postback = ::updateContentType,
+                        onClose = {},
+                        navController = navController
+                    )
+                }
             }
         }
     }

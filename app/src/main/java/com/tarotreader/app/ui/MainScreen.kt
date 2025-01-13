@@ -34,9 +34,7 @@ fun MainScreen(
         modifier = Modifier.fillMaxSize(),
         color = viewModel.backgroundColor
     ) {
-
-        val someViewModel = viewModel<SomeViewModel>()
-        val otherViewModel = viewModel<SomeViewModel>()
+        var r by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
@@ -49,13 +47,12 @@ fun MainScreen(
                     .align(alignment = Alignment.CenterHorizontally)
             )
 
-            RCard(
-                card = TarotCard.The_Fool,
-                n = 0,
-                rotatedState = someViewModel.cardState[0],
-                flip = someViewModel::flipOneCard
-            )
+            RotatableCard(
+                card = TarotCard.The_Fool, rotatedState = r, flip = { r = !r })
 
+            Row {
+                Text("Add statistics?")
+            }
 
             Row(
                 verticalAlignment = Alignment.Bottom,
@@ -69,6 +66,19 @@ fun MainScreen(
                     Text(text = "Add Shuffle")
                 }
             }
+
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.weight(1f)
+            ) {
+                Button(
+                    onClick = {
+
+                    }
+                ) {
+                    Text(text = "Add Mana Points")
+                }
+            }
         }
     }
 }
@@ -79,8 +89,9 @@ fun WelcomeMessage(
     modifier: Modifier = Modifier,
     textstyle: androidx.compose.ui.text.TextStyle = Typography.bodyLarge
 ) {
+    val name = if (username == "") "Guest" else username
     Text(
-        text = "Welcome, $username!",
+        text = "Welcome, $name!",
         modifier = modifier,
         style = textstyle
     )

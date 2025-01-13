@@ -73,7 +73,8 @@ fun ContentTabs(
                 navController = navController
             )
             1 -> SpreadsContent(
-                learningViewModel = learningViewModel
+                learningViewModel = learningViewModel,
+                navController = navController
             )
             2 -> ArticlesContent(
                 dataSource = ArticlesDataSource,
@@ -136,11 +137,11 @@ fun CardsContent(
     }
 }
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpreadsContent(
     modifier: Modifier = Modifier,
+    navController: NavHostController,
     learningViewModel: LearningViewModel = LearningViewModel()
 )
 {
@@ -162,7 +163,14 @@ fun SpreadsContent(
                 items(spreadListFiltered.size) { ind ->
                     SpreadCardComposable(
                         spread = spreadListFiltered[ind],
-                        onClick = {},
+                        onClick = {
+                            navController.navigate(
+                                Content(
+                                    type = "spread",
+                                    id = spreadListFiltered[ind].name
+                                )
+                            )
+                        },
                         modifier = Modifier.padding(end = 18.dp, bottom = 40.dp)
                     )
                 }

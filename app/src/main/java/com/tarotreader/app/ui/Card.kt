@@ -5,7 +5,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tarotreader.app.R
 import com.tarotreader.app.model.CardViewModel
+import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
 
@@ -83,21 +88,22 @@ fun RotatableCard(
 ) {
     var rotated by remember { mutableStateOf(rotatedState) }
     val rotation by animateFloatAsState(
-        targetValue = if (rotated) 180f else 0f,
+        targetValue = if (rotated) 360f else 180f,
         animationSpec = tween(700)
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+//        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
             painter = painterResource(
-                if (rotation > 90f) card.img else card.cover_img
+                if (rotation > 270f) card.img else card.cover_img
             ),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = modifier
                 .clickable {
+                    rotated = !rotated
                     flip() // change rotatedState in viewmodel
                     postback() // incremental to counter
                 }
@@ -109,38 +115,44 @@ fun RotatableCard(
     }
 }
 
+@Preview
 @Composable
-fun RCard(
-    card: TarotCard,
-    n: Int,
-    rotatedState: Boolean,
-    flip: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    postback: () -> Unit = {}
-) {
-    val rotation by animateFloatAsState(
-        targetValue = if (rotatedState) 180f else 0f,
-        animationSpec = tween(700)
-    )
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(
-                if (rotation > 90f) card.img else card.cover_img
-            ),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = modifier
-                .clickable {
-                    flip(n)
-                    postback()
-                }
-                .clip(RoundedCornerShape(4.dp))
-                .graphicsLayer {
-                    rotationY = rotation
-                }
-        )
+fun HeartShuffle() {
+    Row {
+        Column (
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            RotatableCard(
+                card = TarotCard.The_Fool,
+                rotatedState = false,
+                flip = { /*TODO*/ }
+            )
+            RotatableCard(
+                card = TarotCard.The_Fool,
+                rotatedState = false,
+                flip = { /*TODO*/ }
+            )
+        }
+        Column (
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            RotatableCard(
+                card = TarotCard.The_Fool,
+                rotatedState = false,
+                flip = { /*TODO*/ }
+            )
+            RotatableCard(
+                card = TarotCard.The_Fool,
+                rotatedState = false,
+                flip = { /*TODO*/ }
+            )
+            RotatableCard(
+                card = TarotCard.The_Fool,
+                rotatedState = false,
+                flip = { /*TODO*/ }
+            )
+        }
     }
 }

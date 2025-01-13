@@ -36,6 +36,10 @@ class AppViewModel(
         appSettings -> appSettings.manaPoints
     }
 
+    val lastVisitDate = dataStore.data.map {
+        appSettings -> appSettings.lastVisitDate
+    }
+
     suspend fun updateMana(balance: Int, manaPoints: Int) {
         viewModelScope.launch {
             dataStore.updateData {
@@ -63,12 +67,25 @@ class AppViewModel(
     }
 
     suspend fun writePrediction(prediction: Prediction) {
-        dataStore.updateData {
-            it.copy(
-                predictions = it.predictions.mutate {
-                    it.add(prediction)
-                }
-            )
+        viewModelScope.launch {
+            dataStore.updateData {
+                it.copy(
+                    predictions = it.predictions.mutate {
+                        it.add(prediction)
+                    }
+                )
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun updateLastVisitDate(date: String) {
+        viewModelScope.launch {
+            dataStore.updateData {
+                it.copy(
+                    lastVisitDate = date
+                )
+            }
         }
     }
 }

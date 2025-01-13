@@ -2,8 +2,11 @@ package com.tarotreader.app.ui
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,12 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.substring
 import androidx.compose.ui.unit.dp
 import com.tarotreader.app.model.Prediction
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -61,21 +66,54 @@ fun PredictionHistoryView(predictions: List<Prediction>) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun PredictionCard(prediction: Prediction) {
+fun PredictionCard(
+    prediction: Prediction
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .clickable {
+
+            }
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = prediction.question)
-            Text(text = prediction.dateTime)
-            Text(
-                text= prediction.prediction,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
-            )
-            // ... other prediction details
+        val formatter = DateTimeFormatter.ofPattern("H:mm")
+        Column(modifier = Modifier.padding(8.dp)) {
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = LocalDateTime.parse(prediction.dateTime).format(formatter)
+                )
+            }
+            Row (
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = prediction.question,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Row {
+                Text(
+                    text= "Spread: ${prediction.spread.toString()}"
+                )
+            }
+            Row {
+                Text(
+                    text= prediction.prediction,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
+}
+
+@Composable
+fun PredictionBottomDrawer(
+    prediction: Prediction
+) {
+
 }

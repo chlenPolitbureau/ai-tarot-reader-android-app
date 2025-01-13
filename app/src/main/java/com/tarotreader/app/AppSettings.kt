@@ -26,7 +26,8 @@ data class AppSettings (
     val manaPoints: Int = 30,
     val userName: String = "",
     val gender: String = "",
-    val dateOfBirth: String = ""
+    val dateOfBirth: String = "",
+    val lastVisitDate: String = ""
 )
 
 enum class Language {

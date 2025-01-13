@@ -99,14 +99,18 @@ fun ChatController(
     Column (
     ) {
         if (chatViewModel.showController.value) {
+
             if (chatViewModel.ifExpectingPrediction.value &&
                 !chatViewModel.spreadSelected.value) {
                 ChooseSpread(
                     chatViewModel = chatViewModel,
                 )
+
+                // filter spread that available by mana points
             }
-            else if (chatViewModel.ifExpectingPrediction.value &&
-                chatViewModel.spreadSelected.value) {
+            else if (chatViewModel.ifExpectingPrediction.value
+                && chatViewModel.spreadSelected.value
+                && userManaBalance >= currentSpread.value.manaCost) {
                 ChatInput(
                     onMessageSend = {
                         scope.launch {
@@ -133,6 +137,26 @@ fun ChatController(
                         chatViewModel = chatViewModel
                     )
                 }
+            } else if (chatViewModel.ifExpectingPrediction.value
+                && chatViewModel.spreadSelected.value
+                && userManaBalance < currentSpread.value.manaCost) {
+                // show message that not enough mana points and a choose spread button
+                Row {
+                    ElevatedButton(onClick = {
+                        scope.launch {
+                            chatViewModel.spreadSelected.value = false
+                        }
+                    }) {
+                        Text("Back to Spread picker")
+                    }
+
+                    ElevatedButton(onClick = {
+                        // invoke ads and add credits
+                    }) {
+                        Text("Watch ads to get credits")
+                    }
+                }
+
             } else {
                 Row(
                     horizontalArrangement = Arrangement.Center
