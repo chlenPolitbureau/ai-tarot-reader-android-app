@@ -1,11 +1,14 @@
 package com.tarotreader.app
 
+import com.tarotreader.app.model.Currency
+import com.tarotreader.app.model.CurrencyType
 import com.tarotreader.app.model.Prediction
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -27,7 +30,14 @@ data class AppSettings (
     val userName: String = "",
     val gender: String = "",
     val dateOfBirth: String = "",
-    val lastVisitDate: String = ""
+    val lastVisitDate: String = "",
+    @Serializable(with = MyPersistentListSerializer::class)
+    val currencies: PersistentList<Currency> = persistentListOf(
+        Currency(
+            CurrencyType.MANA,
+            30
+        )
+    )
 )
 
 enum class Language {

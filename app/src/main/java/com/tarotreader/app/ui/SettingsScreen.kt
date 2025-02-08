@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.tarotreader.app.AppSettings
 import com.tarotreader.app.model.AppViewModel
 import java.time.Instant
 import java.time.LocalDate
@@ -48,8 +49,11 @@ fun PersonalSettingsScreen(
     navController: NavHostController? = null,
     appViewModel: AppViewModel
 ) {
-    var nm = appViewModel.currentUserName.collectAsState(initial = "aa").value
-    var name by remember { mutableStateOf(nm) }
+    val appDataStore = appViewModel.appSettingsFlow.collectAsState(
+        initial = AppSettings()
+    )
+
+    var name by remember { mutableStateOf(appDataStore.value.userName) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var selectedGender by remember { mutableStateOf("") }
     var showDatePickerDialog by remember { mutableStateOf(false) }
@@ -62,7 +66,7 @@ fun PersonalSettingsScreen(
     ) {
         OutlinedTextField(
             value = if(enableNameEdit) {""} else name,
-            onValueChange = { nm = it },
+            onValueChange = { name = it },
             label = { Text("Name")},
             readOnly = enableNameEdit,
             singleLine = true,
@@ -98,19 +102,6 @@ fun PersonalSettingsScreen(
         )
 
         Spacer(modifier = Modifier.weight(1f)) // Push button to the bottom
-
-        Button(
-            onClick = {
-                appViewModel.updatePersonalSettings(
-                name = name,
-                gender = selectedGender,
-                dateOfBirth = selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-                navController?.navigateUp()
-                      },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Save Information")
-        }
 
         if (showDatePickerDialog) {
             DatePickerDialog(

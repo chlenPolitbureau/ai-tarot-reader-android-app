@@ -18,23 +18,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.tarotreader.app.AppSettings
 import com.tarotreader.app.model.AppViewModel
+import com.tarotreader.app.model.CurrencyType
 import com.tarotreader.app.model.SomeViewModel
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
 
 @Composable
 fun MainScreen(
-    navController: NavHostController,
     appViewModel: AppViewModel,
 ) {
     val viewModel = viewModel<SomeViewModel>()
+    val appDataStoreState = appViewModel.appSettingsFlow.collectAsState(
+        initial = AppSettings()
+    )
 
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = viewModel.backgroundColor
     ) {
         var r by remember { mutableStateOf(false) }
+        val currencies = appDataStoreState.value.currencies
+        val userName = appDataStoreState.value.userName
+
 
         Column(
             modifier = Modifier
@@ -42,7 +49,7 @@ fun MainScreen(
         ) {
 
             WelcomeMessage(
-                username = appViewModel.currentUserName.collectAsState(initial = "Guest").value,
+                username = userName,
                 modifier = Modifier
                     .align(alignment = Alignment.CenterHorizontally)
             )
@@ -52,6 +59,25 @@ fun MainScreen(
 
             Row {
                 Text("Add statistics?")
+            }
+
+            Row {
+                Column {
+                    currencies.forEach {
+                        currency ->
+                        Text("${currency.type}: ${currency.amount}")
+                    }
+                    Button(
+                        onClick = {
+                            appViewModel.updateCurrency(
+                                type = CurrencyType.MANA,
+                                amount = 10
+                            )
+                        }
+                    ) {
+                        Text(text = "Add Mana")
+                    }
+                }
             }
 
             Row(

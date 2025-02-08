@@ -65,7 +65,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TarotReaderApp(
     sharedPrefs: SharedPreferences,
-    dataStore: DataStore<AppSettings>,
     appViewModel: AppViewModel,
     navController: NavHostController = rememberNavController()
 ) {
@@ -79,7 +78,7 @@ fun TarotReaderApp(
     val showBackArrow = currentScreen != "Main"
     val contentType = remember { mutableStateOf("") }
 
-    val dataStoreState = dataStore.data.collectAsState(
+    val dataStoreState = appViewModel.appSettingsFlow.collectAsState(
         initial = AppSettings()
     )
 
@@ -144,7 +143,6 @@ fun TarotReaderApp(
                 }
                 composable<Main> {
                     MainScreen(
-                        navController = navController,
                         appViewModel = appViewModel
                     )
                 }
@@ -228,7 +226,6 @@ fun TarotReaderApp(
                 }
                 composable<Main> {
                     MainScreen(
-                        navController = navController,
                         appViewModel = appViewModel
                     )
                 }

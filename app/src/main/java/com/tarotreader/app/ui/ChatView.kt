@@ -45,11 +45,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tarotreader.app.AppSettings
 import com.tarotreader.app.R
 import com.tarotreader.app.model.Author
 import com.tarotreader.app.model.ChatMessage
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.ChatViewModel
+import com.tarotreader.app.model.CurrencyType
 import com.tarotreader.app.model.Draw
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotReader
@@ -92,7 +94,10 @@ fun ChatController(
     appViewModel: AppViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val userManaBalance = appViewModel.currentManaPoints.collectAsState(initial = 30).value
+    val appDataStore = appViewModel.appSettingsFlow.collectAsState(
+        initial = AppSettings()
+    )
+    val userManaBalance by remember { mutableStateOf(appDataStore.value.currencies.first().amount ) }
     val currentSpread = chatViewModel.predictionSpread
     val scope = rememberCoroutineScope()
 
@@ -114,9 +119,9 @@ fun ChatController(
                 ChatInput(
                     onMessageSend = {
                         scope.launch {
-                            appViewModel.updateMana(
-                                balance = userManaBalance,
-                                manaPoints = currentSpread.value.manaCost * -1
+                            appViewModel.updateCurrency(
+                                type = CurrencyType.MANA,
+                                amount = currentSpread.value.manaCost.toLong() * -1
                             )
                             chatViewModel.addMessage(
                                 ChatMessage(
