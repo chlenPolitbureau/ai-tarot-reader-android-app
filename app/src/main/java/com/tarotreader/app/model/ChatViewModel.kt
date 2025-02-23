@@ -3,19 +3,14 @@ package com.tarotreader.app.model
 import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tarotreader.app.data.ChatDataSource
 import com.tarotreader.app.data.PredictRequest
 import com.tarotreader.app.data.RetrofitClient
-import com.tarotreader.app.ui.ShuffleDeck
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -30,7 +25,6 @@ class ChatViewModel @Inject constructor (
     private val _listOfCardStates = mutableStateListOf<MutableList<Boolean>>()
     val messages = _messages
     val listOfCardStates = _listOfCardStates
-
     val ifExpectingPrediction: MutableState<Boolean> = mutableStateOf(false)
     val question: MutableState<String> = mutableStateOf("")
     val showChips: MutableState<Boolean> = mutableStateOf(true)

@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.tarotreader.app.R
+import kotlinx.serialization.Serializable
 
 enum class Suites {
     MAJOR,

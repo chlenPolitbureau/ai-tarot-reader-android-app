@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.tarotreader.app"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -86,6 +86,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation ("com.google.protobuf:protobuf-javalite:3.10.0")
     implementation("com.google.dagger:hilt-android:2.51.1")
+    implementation("androidx.core:core-splashscreen:1.0.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation(libs.material)
     implementation(libs.navigation.compose)

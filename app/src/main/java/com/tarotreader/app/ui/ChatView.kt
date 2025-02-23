@@ -1,6 +1,5 @@
 package com.tarotreader.app.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -21,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -47,12 +44,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tarotreader.app.AppSettings
 import com.tarotreader.app.R
+import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.Author
 import com.tarotreader.app.model.ChatMessage
-import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.model.CurrencyType
-import com.tarotreader.app.model.Draw
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotReader
 import kotlinx.coroutines.delay
@@ -62,8 +58,15 @@ import kotlinx.coroutines.launch
 fun ChatView(
     title: String = "Reading",
     appViewModel: AppViewModel,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    spread: Spread? = null
 ) {
+
+    LaunchedEffect(key1 = true) {
+        if (spread != null) {
+            chatViewModel.updateSelectedSpread(spread)
+        }
+    }
 
     Column (
         modifier = Modifier.fillMaxSize()
@@ -94,9 +97,7 @@ fun ChatController(
     appViewModel: AppViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val appDataStore = appViewModel.appSettingsFlow.collectAsState(
-        initial = AppSettings()
-    )
+    val appDataStore = appViewModel.uiState.collectAsState()
     val userManaBalance by remember { mutableStateOf(appDataStore.value.currencies.first().amount ) }
     val currentSpread = chatViewModel.predictionSpread
     val scope = rememberCoroutineScope()
@@ -164,7 +165,7 @@ fun ChatController(
 
             } else {
                 Row(
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     ElevatedButton(
                         modifier = modifier,

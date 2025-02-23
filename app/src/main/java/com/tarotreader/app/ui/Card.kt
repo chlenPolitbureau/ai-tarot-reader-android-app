@@ -24,18 +24,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tarotreader.app.R
-import com.tarotreader.app.model.CardViewModel
-import com.tarotreader.app.model.ChatViewModel
-import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
 
 @Composable
 fun FlippableCard (
     @DrawableRes front_img: Int,
     rotate: Boolean = false,
-    index: Int = 0,
+    orientation: Int = -1,
     @DrawableRes back_img: Int = R.drawable.backside,
     modifier: Modifier = Modifier,
     flipPostback: () -> Unit = {},
@@ -48,6 +44,8 @@ fun FlippableCard (
         targetValue = if (rotate) 180f else 0f,
         animationSpec = tween(700)
     )
+
+    val verticalOrientation = if (orientation == -1) 180f else 0f
 
     fun flip() {
         rotated = !rotated
@@ -72,6 +70,7 @@ fun FlippableCard (
                 .clip(RoundedCornerShape(4.dp))
                 .graphicsLayer {
                     rotationY = rotation
+                    rotationZ = verticalOrientation
                 }
         )
     }
@@ -92,6 +91,8 @@ fun RotatableCard(
         animationSpec = tween(700)
     )
 
+    val verticalOrientation = if (card.orientation == -1) 180f else 0f
+
     Box(
 //        horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -110,6 +111,7 @@ fun RotatableCard(
                 .clip(RoundedCornerShape(4.dp))
                 .graphicsLayer {
                     rotationY = rotation
+                    rotationZ = verticalOrientation
                 }
             )
     }

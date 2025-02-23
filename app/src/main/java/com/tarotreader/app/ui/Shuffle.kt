@@ -254,8 +254,8 @@ fun BrokenHeartLayout (
                 postback = postback
             )
             RotatableCard(
-                card = draw.listOfCards[3],
-                rotatedState = flipState[3],
+                card = draw.listOfCards[2],
+                rotatedState = flipState[2],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
                     index = 3
@@ -270,8 +270,8 @@ fun BrokenHeartLayout (
             modifier = modifier.heightIn(min = 520.dp)
         ) {
             RotatableCard(
-                card = draw.listOfCards[0],
-                rotatedState = flipState[0],
+                card = draw.listOfCards[4],
+                rotatedState = flipState[4],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
                     index = 0
@@ -280,8 +280,8 @@ fun BrokenHeartLayout (
                 postback = postback
             )
             RotatableCard(
-                card = draw.listOfCards[3],
-                rotatedState = flipState[3],
+                card = draw.listOfCards[5],
+                rotatedState = flipState[5],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
                     index = 3
@@ -290,8 +290,8 @@ fun BrokenHeartLayout (
                 postback = postback
             )
             RotatableCard(
-                card = draw.listOfCards[3],
-                rotatedState = flipState[3],
+                card = draw.listOfCards[6],
+                rotatedState = flipState[6],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
                     index = 3
@@ -316,8 +316,8 @@ fun BrokenHeartLayout (
                 postback = postback
             )
             RotatableCard(
-                card = draw.listOfCards[2],
-                rotatedState = flipState[2],
+                card = draw.listOfCards[3],
+                rotatedState = flipState[3],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
                     index = 2

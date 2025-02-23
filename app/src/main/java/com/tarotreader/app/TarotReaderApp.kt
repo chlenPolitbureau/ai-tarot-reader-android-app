@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,8 @@ import com.tarotreader.app.data.BottomBarMenuItem
 import com.tarotreader.app.model.CardViewModel
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.ChatViewModel
+import com.tarotreader.app.model.CurrencyType
+import com.tarotreader.app.model.Spread
 import com.tarotreader.app.ui.ChatView
 import com.tarotreader.app.ui.ContentTabs
 import com.tarotreader.app.ui.ContentViewPage
@@ -58,6 +61,8 @@ import com.tarotreader.app.ui.PredictionHistoryView
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 
@@ -78,12 +83,13 @@ fun TarotReaderApp(
     val showBackArrow = currentScreen != "Main"
     val contentType = remember { mutableStateOf("") }
 
-    val dataStoreState = appViewModel.appSettingsFlow.collectAsState(
-        initial = AppSettings()
-    )
+    val dataStoreState by appViewModel.uiState.collectAsState()
 
-    val userManaPoints = dataStoreState.value.manaPoints
-    val userName = dataStoreState.value.userName
+    val userManaPoints = dataStoreState.currencies.first {
+        it.type == CurrencyType.MANA
+    }.amount
+    val userName = dataStoreState.userName
+    val sessionLaunchTimeStampMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
 
     val isFirstLaunch = sharedPrefs.getBoolean("isFirstLaunch", true)
 
@@ -101,8 +107,18 @@ fun TarotReaderApp(
     else if (currentScreen.contains("Content") ) {
             screenTitle.value = "About the ${contentType.value}"
         }
+    else if (currentScreen.contains("Chat") ) {
+        screenTitle.value = "Chat"
+    }
     else {
         screenTitle.value = currentScreen
+    }
+
+    LaunchedEffect(key1 = true) {
+        appViewModel.sessionLaunch(
+            lastSessionMillis = dataStoreState.lastSessionDateTimeMilliSec,
+            nowMillis = sessionLaunchTimeStampMillis
+        )
     }
 
     if(isFirstLaunch) {
@@ -172,8 +188,7 @@ fun TarotReaderApp(
                 }
                 composable<Journal> {
                     PredictionHistoryView(
-                        predictions = dataStoreState.value.predictions,
-//                    navController = navController
+                        predictions = dataStoreState.predictions
                     )
                 }
                 composable<Content> {
@@ -230,6 +245,7 @@ fun TarotReaderApp(
                     )
                 }
                 composable<Chat> {
+                    val args = it.toRoute<Chat>()
                     val chatViewModel = viewModel<ChatViewModel>(
                         factory = object : ViewModelProvider.Factory {
                             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -239,7 +255,8 @@ fun TarotReaderApp(
                     )
                     ChatView(
                         appViewModel = appViewModel,
-                        chatViewModel = chatViewModel
+                        chatViewModel = chatViewModel,
+                        spread = args.spread
                     )
                 }
                 composable<Learn> {
@@ -255,8 +272,7 @@ fun TarotReaderApp(
                 }
                 composable<Journal> {
                     PredictionHistoryView(
-                        predictions = dataStoreState.value.predictions,
-//                    navController = navController
+                        predictions = dataStoreState.predictions,
                     )
                 }
                 composable<Content> {
@@ -282,7 +298,7 @@ fun TopAppBarClass(
     drawerState: DrawerState,
     navController: NavHostController,
     showBackArrow: Boolean,
-    manaPoints: Int
+    manaPoints: Long
 ) {
     val scope = rememberCoroutineScope()
 
@@ -336,7 +352,7 @@ fun TarotReaderAppBar(
     showBackArrow: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    userManaPoints: Int,
+    userManaPoints: Long,
     username: String
 ) {
     val scope = rememberCoroutineScope()
@@ -367,7 +383,9 @@ fun RealBottomBar(
         BottomBarMenuItem(
             text = R.string.Reading,
             icon = R.drawable.sparkle,
-            navigate = { navController.navigate(Chat) }
+            navigate = { navController.navigate(Chat(
+                spread = null
+            )) }
         ),
         BottomBarMenuItem(
             text = R.string.learn,
@@ -411,7 +429,9 @@ object Main
 object Journal
 
 @Serializable
-object Chat
+data class Chat(
+    val spread: Spread? = null
+)
 
 @Serializable
 object Learn

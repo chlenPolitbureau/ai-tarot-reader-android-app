@@ -17,22 +17,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.tarotreader.app.AppSettings
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.CurrencyType
 import com.tarotreader.app.model.SomeViewModel
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Composable
 fun MainScreen(
     appViewModel: AppViewModel,
 ) {
     val viewModel = viewModel<SomeViewModel>()
-    val appDataStoreState = appViewModel.appSettingsFlow.collectAsState(
-        initial = AppSettings()
-    )
+    val appDataStoreState = appViewModel.uiState.collectAsState()
 
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -41,6 +42,7 @@ fun MainScreen(
         var r by remember { mutableStateOf(false) }
         val currencies = appDataStoreState.value.currencies
         val userName = appDataStoreState.value.userName
+        val sessionLaunchTimeStampMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
 
 
         Column(
@@ -84,26 +86,20 @@ fun MainScreen(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.weight(1f)
             ) {
-                Button(
-                    onClick = {
-                        viewModel.changeBackgroundColor()
-                    }
-                ) {
-                    Text(text = "Add Shuffle")
-                }
+                Text(text = "DTS ${appDataStoreState.value.lastSessionDateTimeMilliSec}")
             }
 
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                modifier = Modifier.weight(1f)
-            ) {
-                Button(
-                    onClick = {
+            Row {
+                Text(text = "NTS ${sessionLaunchTimeStampMillis}")
+            }
 
-                    }
-                ) {
-                    Text(text = "Add Mana Points")
-                }
+            Row {
+                Text(text = "Gender: ${appDataStoreState.value.gender}")
+            }
+            Row {
+                Text(text = "Date of Birth: ${
+                    appDataStoreState.value.dateOfBirth?.let { Instant.ofEpochMilli(it).atOffset(ZoneOffset.UTC).toLocalDate() }
+                }")
             }
         }
     }
@@ -121,5 +117,4 @@ fun WelcomeMessage(
         modifier = modifier,
         style = textstyle
     )
-
 }

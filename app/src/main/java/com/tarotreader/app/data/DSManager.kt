@@ -11,6 +11,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 val Context.appSettingsDataStore by dataStore("settings.json", AppSettingsSerializer)
 
@@ -23,11 +24,8 @@ class DSManager(val context: Context) {
             it.copy(
                 predictions = data.predictions,
                 language = data.language,
-                manaPoints = data.manaPoints,
                 userName = data.userName,
                 gender = data.gender,
-                dateOfBirth = data.dateOfBirth,
-                lastVisitDate = data.lastVisitDate,
                 currencies = data.currencies
             )
         }
@@ -36,13 +34,33 @@ class DSManager(val context: Context) {
     suspend fun updatePersonalData(
         name: String,
         gender: String,
-        dateOfBirth: String
+        dateOfBirth: Long
     ) {
         context.appSettingsDataStore.updateData {
             it.copy(
                 userName = name,
                 gender = gender,
                 dateOfBirth = dateOfBirth
+            )
+        }
+    }
+
+    suspend fun updateLastSession(
+        timeStampMillis: Long
+    ) {
+        context.appSettingsDataStore.updateData {
+            it.copy(
+                lastSessionDateTimeMilliSec = timeStampMillis
+            )
+        }
+    }
+
+    suspend fun updateGender(
+        gender: String
+    ) {
+        context.appSettingsDataStore.updateData {
+            it.copy(
+                gender = gender
             )
         }
     }

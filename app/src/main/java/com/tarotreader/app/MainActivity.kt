@@ -12,6 +12,8 @@ import com.tarotreader.app.data.DSManager
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.AppViewModelFactory
 import com.tarotreader.app.ui.theme.TarotReaderTheme
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 
 //val Context.dataStore by dataStore("settings.json", AppSettingsSerializer)
@@ -28,7 +30,6 @@ class MainActivity : ComponentActivity() {
                     dataStoreManager
                 )
                 val appViewModel = ViewModelProvider(this, viewModelFactory)[AppViewModel::class.java]
-
 
                 val sharedPrefs = getSharedPreferences("com.tarotreader.app.prefs_key_values",
                     Context.MODE_PRIVATE)

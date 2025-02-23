@@ -8,34 +8,36 @@ import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @Serializable
 data class AppSettings (
     @Serializable(with = MyPersistentListSerializer::class)
     val predictions: PersistentList<Prediction> = persistentListOf(),
     val language: Language = Language.ENGLISH,
-    val manaPoints: Int = 30,
     val userName: String = "",
     val gender: String = "",
-    val dateOfBirth: String = "",
-    val lastVisitDate: String = "",
+    val dateOfBirth: Long? = null,
+    val lastSessionDateTimeMilliSec: Long = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
     @Serializable(with = MyPersistentListSerializer::class)
     val currencies: PersistentList<Currency> = persistentListOf(
         Currency(
             CurrencyType.MANA,
-            30
+            30 
         )
     )
 )
@@ -89,6 +91,26 @@ class MyPersistentMapSerializer(
 
     override fun deserialize(decoder: Decoder): PersistentMap<String, Prediction> {
         return MapSerializer(keySerializer, valueSerializer).deserialize(decoder).toPersistentMap()
+    }
+
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializer(forClass = LocalDateTime::class)
+class MyLocalDateTimeSerializer {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(
+        "LocalDateTime",
+        PrimitiveKind.STRING
+    )
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        val stringValue = value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        encoder.encodeString(stringValue)
+    }
+
+    override fun deserialize(decoder: Decoder): LocalDateTime {
+        val stringValue = decoder.decodeString()
+        return LocalDateTime.parse(stringValue, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     }
 
 }
