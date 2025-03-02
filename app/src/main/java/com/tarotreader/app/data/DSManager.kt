@@ -9,9 +9,7 @@ import com.tarotreader.app.model.Prediction
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import java.time.LocalDate
+
 
 val Context.appSettingsDataStore by dataStore("settings.json", AppSettingsSerializer)
 

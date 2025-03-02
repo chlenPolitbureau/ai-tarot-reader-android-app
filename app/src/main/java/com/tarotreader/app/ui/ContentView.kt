@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tarotreader.app.R
@@ -103,10 +106,10 @@ fun CardDescriptionViewPage(
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "Dummy description goes here - it's usually a very long text with callbackFunc only, there is no complain, and callbackFunc.invoke() works as well. update, @crgarridos, you're right, the compiler does not" +
-                            "Something doesn't add up; the error says you have a () -> Int, but you're actually using () -> Unit in the MCVE? Is that a typo @lannyf?",
+                    text = stringResource(id = card.descriptionUpright),
                     style = Typography.bodyMedium,
                     modifier = Modifier.padding(10.dp)
+                        .verticalScroll(rememberScrollState())
                 )
         }
     }

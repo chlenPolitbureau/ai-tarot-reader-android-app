@@ -28,8 +28,8 @@ val Typography = Typography(
     bodyMedium = TextStyle(
         fontFamily = Nunito,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
         letterSpacing = 0.5.sp
     ),
     /* Other default text styles to override    */
@@ -39,6 +39,13 @@ val Typography = Typography(
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
+    ),
+    titleMedium = TextStyle(
+        fontFamily = Metamorphous,
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 1.sp
     ),
     titleSmall = TextStyle(
         fontFamily = Metamorphous,

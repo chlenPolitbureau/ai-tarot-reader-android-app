@@ -12,8 +12,6 @@ import com.tarotreader.app.data.DSManager
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.AppViewModelFactory
 import com.tarotreader.app.ui.theme.TarotReaderTheme
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 
 //val Context.dataStore by dataStore("settings.json", AppSettingsSerializer)
@@ -26,14 +24,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             TarotReaderTheme {
                 val dataStoreManager = DSManager(this)
+                val sharedPrefs = getSharedPreferences("com.tarotreader.app.prefs_key_values",
+                    Context.MODE_PRIVATE
+                )
                 val viewModelFactory = AppViewModelFactory(
-                    dataStoreManager
+                    dataStoreManager,
+                    sharedPrefs
                 )
                 val appViewModel = ViewModelProvider(this, viewModelFactory)[AppViewModel::class.java]
 
-                val sharedPrefs = getSharedPreferences("com.tarotreader.app.prefs_key_values",
-                    Context.MODE_PRIVATE)
-
+                sharedPrefs.edit().putBoolean("isFirstLaunch", true).apply()
 
                 TarotReaderApp(
                     sharedPrefs = sharedPrefs,

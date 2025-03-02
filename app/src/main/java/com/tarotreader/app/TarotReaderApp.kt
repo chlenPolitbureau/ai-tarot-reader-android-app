@@ -1,6 +1,5 @@
 package com.tarotreader.app
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -23,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +32,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,7 +42,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.tarotreader.app.data.BottomBarMenuItem
-import com.tarotreader.app.model.CardViewModel
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.model.CurrencyType
@@ -61,8 +57,6 @@ import com.tarotreader.app.ui.PredictionHistoryView
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 
@@ -89,8 +83,6 @@ fun TarotReaderApp(
         it.type == CurrencyType.MANA
     }.amount
     val userName = dataStoreState.userName
-    val sessionLaunchTimeStampMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
-
     val isFirstLaunch = sharedPrefs.getBoolean("isFirstLaunch", true)
 
     fun updateContentType(name: String) {
@@ -114,14 +106,8 @@ fun TarotReaderApp(
         screenTitle.value = currentScreen
     }
 
-    LaunchedEffect(key1 = true) {
-        appViewModel.sessionLaunch(
-            lastSessionMillis = dataStoreState.lastSessionDateTimeMilliSec,
-            nowMillis = sessionLaunchTimeStampMillis
-        )
-    }
-
     if(isFirstLaunch) {
+
         Scaffold(
             topBar = {
                 if(showBars.value) {
@@ -159,7 +145,8 @@ fun TarotReaderApp(
                 }
                 composable<Main> {
                     MainScreen(
-                        appViewModel = appViewModel
+                        appViewModel = appViewModel,
+                        navController = navController
                     )
                 }
                 composable<Chat> {
@@ -241,7 +228,8 @@ fun TarotReaderApp(
                 }
                 composable<Main> {
                     MainScreen(
-                        appViewModel = appViewModel
+                        appViewModel = appViewModel,
+                        navController = navController
                     )
                 }
                 composable<Chat> {

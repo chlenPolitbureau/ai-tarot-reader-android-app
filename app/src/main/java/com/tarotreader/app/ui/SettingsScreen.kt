@@ -87,9 +87,9 @@ fun PersonalSettingsScreenWrapper(
     }
 
     fun updateDateOfBirth(
-        newDateOfirth: Long
+        newDateOfBirth: Long
     ) {
-        dayOfBirth = newDateOfirth
+        dayOfBirth = newDateOfBirth
     }
 
     fun updateName(
@@ -116,6 +116,7 @@ fun PersonalSettingsScreenWrapper(
                 modifier = Modifier.fillMaxWidth()
             )
         }
+        Spacer(modifier = Modifier.height(20.dp))
         Row {
             DatePickerFieldToModal(
                 dayOfBirthMillis = dayOfBirth,
@@ -125,6 +126,7 @@ fun PersonalSettingsScreenWrapper(
         Spacer(modifier = Modifier.height(20.dp))
         Row {
             GenderRadioButton(
+                gender = gender,
                 postback = ::updateGender
             )
         }
@@ -225,9 +227,10 @@ fun DatePickerModal(
 
 @Composable
 fun GenderRadioButton(
+    gender: String = "",
     postback: (String) -> Unit
 ) {
-    var selectedGender = remember { mutableStateOf("") }
+    var selectedGender = remember { mutableStateOf(gender) }
     val radioOptions = listOf("Male", "Female")
     Column {
         radioOptions.forEach {

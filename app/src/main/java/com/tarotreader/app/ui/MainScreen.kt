@@ -1,84 +1,93 @@
 package com.tarotreader.app.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tarotreader.app.AppSettings
+import androidx.navigation.NavHostController
 import com.tarotreader.app.model.AppViewModel
-import com.tarotreader.app.model.CurrencyType
-import com.tarotreader.app.model.SomeViewModel
-import com.tarotreader.app.model.TarotCard
+import com.tarotreader.app.model.DailyAdvice
+import com.tarotreader.app.model.DailyAdviceCard
 import com.tarotreader.app.ui.theme.Typography
+import kotlinx.coroutines.launch
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 @Composable
 fun MainScreen(
     appViewModel: AppViewModel,
+    navController: NavHostController
 ) {
-    val viewModel = viewModel<SomeViewModel>()
     val appDataStoreState = appViewModel.uiState.collectAsState()
 
-    Surface (
-        modifier = Modifier.fillMaxSize(),
-        color = viewModel.backgroundColor
+    Surface(
+        modifier = Modifier.fillMaxSize()
     ) {
-        var r by remember { mutableStateOf(false) }
-        val currencies = appDataStoreState.value.currencies
-        val userName = appDataStoreState.value.userName
-        val sessionLaunchTimeStampMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
+        val sessionLaunchTimeStampMillis =
+            LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
+        val scope = rememberCoroutineScope()
 
+        LaunchedEffect(key1 = true) {
+            appViewModel.sessionLaunch(
+                lastSessionMillis = appDataStoreState.value.lastSessionDateTimeMilliSec,
+                nowMillis = sessionLaunchTimeStampMillis
+            )
+        }
 
         Column(
             modifier = Modifier
                 .padding(6.dp)
         ) {
-
-            WelcomeMessage(
-                username = userName,
-                modifier = Modifier
-                    .align(alignment = Alignment.CenterHorizontally)
-            )
-
-            RotatableCard(
-                card = TarotCard.The_Fool, rotatedState = r, flip = { r = !r })
-
-            Row {
-                Text("Add statistics?")
+            val adviceListWithNavController = appViewModel.dailyAdviceList
+            adviceListWithNavController.map {
+                it.navController = navController
             }
 
+            WelcomeMessage(
+                username = appDataStoreState.value.userName,
+                modifier = Modifier
+                    .align(alignment = Alignment.Start)
+                    .fillMaxWidth()
+            )
+
+            DailyAdviceBlock(
+                dailyAdvice = adviceListWithNavController
+            )
+
             Row {
-                Column {
-                    currencies.forEach {
-                        currency ->
-                        Text("${currency.type}: ${currency.amount}")
+                ElevatedButton(onClick = {
+                    scope.launch {
+                        appViewModel.updateGender(
+                            gender = "Male"
+                        )
                     }
-                    Button(
-                        onClick = {
-                            appViewModel.updateCurrency(
-                                type = CurrencyType.MANA,
-                                amount = 10
-                            )
-                        }
-                    ) {
-                        Text(text = "Add Mana")
+                }) {
+                    Text(
+                        "Become a man"
+                    )
+                }
+                ElevatedButton(onClick = {
+                    scope.launch {
+                        appViewModel.updateGender(
+                            "Female")
                     }
+                }) {
+                    Text("Become a woman")
                 }
             }
 
@@ -98,7 +107,9 @@ fun MainScreen(
             }
             Row {
                 Text(text = "Date of Birth: ${
-                    appDataStoreState.value.dateOfBirth?.let { Instant.ofEpochMilli(it).atOffset(ZoneOffset.UTC).toLocalDate() }
+                    appDataStoreState.value.dateOfBirth?.let {
+                        Instant.ofEpochMilli(it).atOffset(ZoneOffset.UTC).toLocalDate()
+                    }
                 }")
             }
         }
@@ -109,7 +120,7 @@ fun MainScreen(
 fun WelcomeMessage(
     username: String = "Guest",
     modifier: Modifier = Modifier,
-    textstyle: androidx.compose.ui.text.TextStyle = Typography.bodyLarge
+    textstyle: androidx.compose.ui.text.TextStyle = Typography.bodyMedium
 ) {
     val name = if (username == "") "Guest" else username
     Text(
@@ -117,4 +128,29 @@ fun WelcomeMessage(
         modifier = modifier,
         style = textstyle
     )
+}
+
+@Composable
+fun DailyAdviceBlock(
+    dailyAdvice: List<DailyAdvice>
+) {
+    Column {
+        Text(
+            text = "Daily Advice",
+            style = Typography.bodyMedium
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(dailyAdvice) {
+                item -> DailyAdviceCard(
+                dailyAdvice = item,
+                modifier = Modifier.padding(
+                    top = 5.dp,
+                    end = 5.dp)
+                )
+            }
+        }
+    }
 }

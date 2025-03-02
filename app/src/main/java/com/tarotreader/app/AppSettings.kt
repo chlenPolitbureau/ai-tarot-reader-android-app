@@ -32,12 +32,12 @@ data class AppSettings (
     val userName: String = "",
     val gender: String = "",
     val dateOfBirth: Long? = null,
-    val lastSessionDateTimeMilliSec: Long = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
+    val lastSessionDateTimeMilliSec: Long = 0L,
     @Serializable(with = MyPersistentListSerializer::class)
     val currencies: PersistentList<Currency> = persistentListOf(
         Currency(
             CurrencyType.MANA,
-            30 
+            30
         )
     )
 )
