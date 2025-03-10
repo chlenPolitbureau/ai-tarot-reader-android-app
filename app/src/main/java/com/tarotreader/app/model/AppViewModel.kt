@@ -21,15 +21,36 @@ class AppViewModel(
     private val sharedPreferences: SharedPreferences
 ): ViewModel() {
 
-    private val isFirstLaunch = sharedPreferences.getBoolean("isFirstLaunch", true)
     private val nowTimestampMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
 
     private val _uiState = MutableStateFlow(
         AppSettings()
     )
+    private val _sharedPreferences = MutableStateFlow(
+        sharedPreferences
+    )
 
+    val sharedPreferencesState: StateFlow<SharedPreferences> = _sharedPreferences.asStateFlow()
     val uiState: StateFlow<AppSettings> = _uiState.asStateFlow()
     val dailyAdviceList = DailyAdviceSource.listOfAdvice
+
+
+    private fun collectAllCards(list: List<Prediction>): List<TarotCard> {
+        val cardsList = mutableListOf<TarotCard>()
+        list.forEach {
+            cardsList.addAll(it.cards)
+        }
+        return cardsList
+    }
+
+    val totalPredictions = _uiState.value.predictions.size
+    private val cardsList = collectAllCards(_uiState.value.predictions)
+
+    val counts = cardsList.groupingBy { it }
+        .eachCount()
+    val maxCount = counts.values.maxOrNull() ?: 0
+    val favouriteCard = if (counts.isNotEmpty()) counts.filterValues { it == maxCount }.keys.first() else
+        TarotCard.The_Fool
 
     init {
         viewModelScope.launch {
@@ -83,7 +104,8 @@ class AppViewModel(
     suspend fun updatePersonalSettings(
         name: String,
         gender: String,
-        dateOfBirth: Long
+        dateOfBirth: Long,
+        postback: () -> Unit
     ) {
         viewModelScope.launch {
             appSettingsDataStoreManager.updatePersonalData(
@@ -91,6 +113,7 @@ class AppViewModel(
                 gender = gender,
                 dateOfBirth = dateOfBirth
             )
+            postback()
         }
     }
 

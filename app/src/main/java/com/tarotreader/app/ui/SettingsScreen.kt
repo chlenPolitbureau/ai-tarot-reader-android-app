@@ -1,6 +1,8 @@
 package com.tarotreader.app.ui
 
+import android.annotation.SuppressLint
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -17,13 +19,22 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -36,10 +47,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.tarotreader.app.model.AppViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -50,7 +61,6 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PersonalSettingsScreen(
-    navController: NavHostController? = null,
     appViewModel: AppViewModel
 ) {
     val appDataStore = appViewModel.uiState.collectAsState()
@@ -77,8 +87,16 @@ fun PersonalSettingsScreenWrapper(
     var name by remember { mutableStateOf(name) }
     var dayOfBirth by remember { mutableStateOf<Long>(dayOfBirth) }
     var gender by remember { mutableStateOf(gender) }
+    var showSnackBar by remember {
+        mutableStateOf(false)
+    }
 
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    fun updateShowSnackBar() {
+        showSnackBar = !showSnackBar
+    }
 
     fun updateGender(
         newGender: String
@@ -131,6 +149,8 @@ fun PersonalSettingsScreenWrapper(
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
+
+
         Row (
             horizontalArrangement = Arrangement.Center
         ) {
@@ -139,12 +159,18 @@ fun PersonalSettingsScreenWrapper(
                     appViewModel.updatePersonalSettings(
                         name = name,
                         gender = gender,
-                        dateOfBirth = dayOfBirth
+                        dateOfBirth = dayOfBirth,
+                        postback = ::updateShowSnackBar
                     )
+
+
                 }
             }) {
                 Text(text = "Save")
             }
+        }
+        if(showSnackBar) {
+
         }
     }
 }

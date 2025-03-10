@@ -12,4 +12,9 @@ object ChatDataSource {
                     " like to know. I'll make a spread and read it. So please ask. Or choose from the options below",
             author = Author("app")
         )
+    val spreadMessage =
+        ChatMessage(
+            text = "So you've chosen a spread. Now ask your question!",
+            author = Author("app")
+        )
 }

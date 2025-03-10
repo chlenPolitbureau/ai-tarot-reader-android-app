@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "186605437885",
+    "project_id": "ai-tarot-reader-app-28588",
+    "storage_bucket": "ai-tarot-reader-app-28588.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:186605437885:android:264738f129c0d9b55f08d4",
+        "android_client_info": {
+          "package_name": "com.tarotreader.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrO7r-k1w3qO66WB5tQqNP_ErsE942sVQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

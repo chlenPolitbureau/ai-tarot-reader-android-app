@@ -1,6 +1,8 @@
 package com.tarotreader.app.data
 
 import com.tarotreader.app.Chat
+import com.tarotreader.app.Content
+import com.tarotreader.app.Journal
 import com.tarotreader.app.Learn
 import com.tarotreader.app.R
 import com.tarotreader.app.model.DailyAdvice
@@ -21,13 +23,16 @@ object DailyAdviceSource {
             img = R.drawable.learnspreadsthumbnail,
             header = "Learn about Spreads",
             bkgrndColor = bkgrndGrey,
-            route = Learn
+            route = Content(
+                type = "spread",
+                id = "SINGLE_CARD"
+            )
         ),
         DailyAdvice(
             img = R.drawable.predictionsreviewthumbnail,
             header = "Review past readings",
             bkgrndColor = bkgrndGrey,
-            route = Learn
+            route = Journal
         ),
         DailyAdvice(
             img = R.drawable.rewievpredictionsthumbnail,

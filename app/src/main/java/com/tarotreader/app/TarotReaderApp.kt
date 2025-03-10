@@ -106,8 +106,6 @@ fun TarotReaderApp(
         screenTitle.value = currentScreen
     }
 
-    if(isFirstLaunch) {
-
         Scaffold(
             topBar = {
                 if(showBars.value) {
@@ -129,10 +127,10 @@ fun TarotReaderApp(
                 }
             }
         ) {
-                innerPadding ->
+            innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Intro,
+                startDestination = if (isFirstLaunch) Intro else Main,
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable<Intro> {
@@ -146,20 +144,23 @@ fun TarotReaderApp(
                 composable<Main> {
                     MainScreen(
                         appViewModel = appViewModel,
-                        navController = navController
+                        navController = navController,
+                        sharedPrefs = sharedPrefs
                     )
                 }
                 composable<Chat> {
+                    val args = it.toRoute<Chat>()
                     val chatViewModel = viewModel<ChatViewModel>(
                         factory = object : ViewModelProvider.Factory {
                             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                                return ChatViewModel(appViewModel) as T
+                                return ChatViewModel(appViewModel, args.spread) as T
                             }
                         }
                     )
                     ChatView(
                         appViewModel = appViewModel,
-                        chatViewModel = chatViewModel
+                        chatViewModel = chatViewModel,
+                        spreadParameter = args.spread
                     )
                 }
                 composable<Learn> {
@@ -169,7 +170,6 @@ fun TarotReaderApp(
                 }
                 composable<PersonalSettings> {
                     PersonalSettingsScreen(
-                        navController = navController,
                         appViewModel = appViewModel
                     )
                 }
@@ -190,92 +190,6 @@ fun TarotReaderApp(
                 }
             }
         }
-    } else {
-        Scaffold(
-            topBar = {
-                if(showBars.value) {
-                    TarotReaderAppBar(
-                        currentScreen = screenTitle.value,
-                        navController = navController,
-                        showBackArrow = showBackArrow,
-                        userManaPoints = userManaPoints,
-                        username = userName
-                    )
-                }
-            },
-            bottomBar = {
-                if(showBars.value) {
-                    RealBottomBar(
-                        currentScreen = currentScreen,
-                        navController = navController
-                    )
-                }
-            }
-        ) {
-                innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = Main,
-                modifier = Modifier.padding(innerPadding)
-            ) {
-                composable<Intro> {
-                    FeatureDescriptionScreen(
-                        onNextButtonClicked = {
-                            navController.navigate(Main)
-                        },
-                        sharedPrefs = sharedPrefs
-                    )
-                }
-                composable<Main> {
-                    MainScreen(
-                        appViewModel = appViewModel,
-                        navController = navController
-                    )
-                }
-                composable<Chat> {
-                    val args = it.toRoute<Chat>()
-                    val chatViewModel = viewModel<ChatViewModel>(
-                        factory = object : ViewModelProvider.Factory {
-                            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                                return ChatViewModel(appViewModel) as T
-                            }
-                        }
-                    )
-                    ChatView(
-                        appViewModel = appViewModel,
-                        chatViewModel = chatViewModel,
-                        spread = args.spread
-                    )
-                }
-                composable<Learn> {
-                    ContentTabs(
-                        navController = navController
-                    )
-                }
-                composable<PersonalSettings> {
-                    PersonalSettingsScreen(
-                        navController = navController,
-                        appViewModel = appViewModel
-                    )
-                }
-                composable<Journal> {
-                    PredictionHistoryView(
-                        predictions = dataStoreState.predictions,
-                    )
-                }
-                composable<Content> {
-                    val args = it.toRoute<Content>()
-                    ContentViewPage(
-                        type = args.type,
-                        id = args.id,
-                        postback = ::updateContentType,
-                        onClose = {},
-                        navController = navController
-                    )
-                }
-            }
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -371,9 +285,7 @@ fun RealBottomBar(
         BottomBarMenuItem(
             text = R.string.Reading,
             icon = R.drawable.sparkle,
-            navigate = { navController.navigate(Chat(
-                spread = null
-            )) }
+            navigate = { navController.navigate(Chat(spread = null)) }
         ),
         BottomBarMenuItem(
             text = R.string.learn,

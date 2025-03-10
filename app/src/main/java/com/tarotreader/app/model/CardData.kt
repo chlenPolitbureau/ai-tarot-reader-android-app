@@ -189,6 +189,7 @@ enum class TarotCard(
     override fun toString(): String {
         return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
     }
+
 }
 
 data class Draw(
@@ -199,6 +200,7 @@ data class Draw(
     var cardsFlipState = (1..spread.nCards).map { false }.toMutableList()
 }
 
+
 enum class Spread(
     @DrawableRes val schemeImg: Int,
     val description: String,
@@ -208,12 +210,12 @@ enum class Spread(
     private val flipChance: Double = 0.38,
 ) {
     SINGLE_CARD(schemeImg = R.drawable.single_card, description = "Single Card", nCards = 1, affiliation = SpreadAffiliation.CLASSIC, manaCost = 3),
-    THREE_CARDS(schemeImg = R.drawable.three_card, description = "Three Card", nCards = 3, affiliation = SpreadAffiliation.CLASSIC, manaCost = 4),
+    THREE_CARDS(schemeImg = R.drawable.three_card, description = "Three Cards", nCards = 3, affiliation = SpreadAffiliation.CLASSIC, manaCost = 4),
     BROKEN_HEART(schemeImg = R.drawable.broken_heart, description = "Broken heart", nCards = 7, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 7),
     HEALING_HEARTS(schemeImg = R.drawable.healing_hearts, description = "Healing hearts", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 6),
     PYRAMID(schemeImg = R.drawable.pyramid, description = "Pyramid", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 6);
 
-    override fun toString(): String {
+    fun toReadableString(): String {
         return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
     }
 

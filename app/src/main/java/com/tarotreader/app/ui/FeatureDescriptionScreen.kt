@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +29,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tarotreader.app.data.FeaturesDataSource
 import com.tarotreader.app.model.Feature
 import com.tarotreader.app.ui.theme.Typography
@@ -36,11 +41,11 @@ import com.tarotreader.app.ui.theme.Typography
 @Composable
 fun FeatureDescriptionScreen(
     sharedPrefs: SharedPreferences,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     featureList : List<Feature> = FeaturesDataSource.features,
     onNextButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    sharedPrefs.edit().putBoolean("isFirstLaunch", false).apply()
     val pagerState = rememberPagerState { featureList.count() }
 
     Column(
@@ -85,6 +90,24 @@ fun FeatureDescriptionScreen(
             ) {
                 Text(text = "Next")
             }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        // Create an observer that triggers our remembered callbacks
+        // for sending analytics events
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) {
+                sharedPrefs.edit().putBoolean("isFirstLaunch", false).apply()
+            } else if (event == Lifecycle.Event.ON_STOP) {
+
+            }
+        }
+        // Add the observer to the lifecycle
+        lifecycleOwner.lifecycle.addObserver(observer)
+        // When the effect leaves the Composition, remove the observer
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 }

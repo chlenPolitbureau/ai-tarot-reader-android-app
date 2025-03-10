@@ -22,8 +22,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.substring
 import androidx.compose.ui.unit.dp
 import com.tarotreader.app.model.Prediction
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -40,16 +42,8 @@ fun PredictionHistoryView(predictions: List<Prediction>) {
         } else {
                 LazyColumn {
                     items(reversed.size) { index ->
-                        val thisDate = LocalDate.parse(
-                            reversed[index].dateTime.substring(
-                                range = 0..9
-                            )
-                        )
-                        val prevDate = LocalDate.parse(
-                            reversed[if(index == 0) 0 else index - 1].dateTime.substring(
-                                range = 0..9
-                            )
-                        )
+                        val thisDate = Instant.ofEpochMilli(reversed[index].dateTime).atOffset(ZoneOffset.UTC).toLocalDate()
+                        val prevDate = Instant.ofEpochMilli(reversed[if(index == 0) 0 else index - 1].dateTime).atOffset(ZoneOffset.UTC).toLocalDate()
                         if (thisDate != prevDate || index == 0) {
                             Text(
                                 thisDate.format(DateTimeFormatter.ofPattern("MMMM dd, y")),
@@ -84,7 +78,7 @@ fun PredictionCard(
                 horizontalArrangement = Arrangement.End
             ) {
                 Text(
-                    text = LocalDateTime.parse(prediction.dateTime).format(formatter)
+                    text = Instant.ofEpochMilli(prediction.dateTime).atOffset(ZoneOffset.UTC).format(formatter)
                 )
             }
             Row (

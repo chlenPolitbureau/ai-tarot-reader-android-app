@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -42,6 +43,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tarotreader.app.AppSettings
 import com.tarotreader.app.R
 import com.tarotreader.app.model.AppViewModel
@@ -57,14 +62,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatView(
     title: String = "Reading",
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     appViewModel: AppViewModel,
     chatViewModel: ChatViewModel,
-    spread: Spread? = null
+    spreadParameter: Spread? = null
 ) {
-
     LaunchedEffect(key1 = true) {
-        if (spread != null) {
-            chatViewModel.updateSelectedSpread(spread)
+        if (spreadParameter != null) {
+            chatViewModel.updateSelectedSpread(spreadParameter)
         }
     }
 
@@ -77,7 +82,8 @@ fun ChatView(
                 avatar = R.drawable.avatar_lazybones_sloth_svgrepo_com,
                 shortDescription = "I'm a Tarot Reader!",
                 isOnline = true
-            )
+            ),
+            chatViewModel = chatViewModel
         )
         EndFirstLazyColumn(
             modifier = Modifier.weight(1f),
@@ -88,6 +94,24 @@ fun ChatView(
             appViewModel = appViewModel,
             modifier = Modifier.weight(1f),
         )
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        // Create an observer that triggers our remembered callbacks
+        // for sending analytics events
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) {
+                chatViewModel.updateSelectedSpread(null)
+            } else if (event == Lifecycle.Event.ON_STOP) {
+
+            }
+        }
+        // Add the observer to the lifecycle
+        lifecycleOwner.lifecycle.addObserver(observer)
+        // When the effect leaves the Composition, remove the observer
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 }
 
@@ -106,23 +130,27 @@ fun ChatController(
     ) {
         if (chatViewModel.showController.value) {
 
-            if (chatViewModel.ifExpectingPrediction.value &&
-                !chatViewModel.spreadSelected.value) {
+            if (
+                chatViewModel.ifExpectingPrediction.value &&
+                !chatViewModel.spreadSelected
+                ) {
                 ChooseSpread(
                     chatViewModel = chatViewModel,
                 )
 
                 // filter spread that available by mana points
             }
-            else if (chatViewModel.ifExpectingPrediction.value
-                && chatViewModel.spreadSelected.value
-                && userManaBalance >= currentSpread.value.manaCost) {
+            else if (
+                chatViewModel.ifExpectingPrediction.value &&
+                chatViewModel.spreadSelected &&
+                userManaBalance >= currentSpread.value?.manaCost ?: 5
+                    ) {
                 ChatInput(
                     onMessageSend = {
                         scope.launch {
                             appViewModel.updateCurrency(
                                 type = CurrencyType.MANA,
-                                amount = currentSpread.value.manaCost.toLong() * -1
+                                amount = (currentSpread.value?.manaCost?.toLong() ?: 5) * -1
                             )
                             chatViewModel.addMessage(
                                 ChatMessage(
@@ -143,14 +171,16 @@ fun ChatController(
                         chatViewModel = chatViewModel
                     )
                 }
-            } else if (chatViewModel.ifExpectingPrediction.value
-                && chatViewModel.spreadSelected.value
-                && userManaBalance < currentSpread.value.manaCost) {
+            } else if (
+                chatViewModel.ifExpectingPrediction.value
+                && chatViewModel.spreadSelected
+                && userManaBalance < currentSpread.value?.manaCost ?: 5
+                    ) {
                 // show message that not enough mana points and a choose spread button
                 Row {
                     ElevatedButton(onClick = {
                         scope.launch {
-                            chatViewModel.spreadSelected.value = false
+                            chatViewModel.spreadSelected = false
                         }
                     }) {
                         Text("Back to Spread picker")

@@ -244,7 +244,7 @@ fun SpreadCardComposable(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(text = spread.toString())
+                Text(text = spread.toReadableString())
                 Text(text = spread.description)
                 Button(
                     onClick = onClick,

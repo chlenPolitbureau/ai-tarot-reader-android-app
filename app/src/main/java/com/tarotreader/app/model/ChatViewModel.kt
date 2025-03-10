@@ -15,13 +15,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatViewModel @Inject constructor (
-    private val appViewModel: AppViewModel
+    private val appViewModel: AppViewModel,
+    initialSpread: Spread? = null
 ): ViewModel() {
-    private val _messages = mutableStateListOf(ChatDataSource.initState)
+    val predictionSpread: MutableState<Spread?> = mutableStateOf(initialSpread)
+    private var _messages = mutableStateListOf<ChatMessage>()
     private val _listOfCardStates = mutableStateListOf<MutableList<Boolean>>()
     val messages = _messages
     val listOfCardStates = _listOfCardStates
@@ -29,9 +32,14 @@ class ChatViewModel @Inject constructor (
     val question: MutableState<String> = mutableStateOf("")
     val showChips: MutableState<Boolean> = mutableStateOf(true)
     val showController: MutableState<Boolean> = mutableStateOf(true)
-    val spreadSelected: MutableState<Boolean> = mutableStateOf(false)
-    val predictionSpread: MutableState<Spread> = mutableStateOf(Spread.THREE_CARDS)
     var predictionListOfCards: MutableState<List<TarotCard>> = mutableStateOf(listOf())
+    var spreadSelected: Boolean = false
+        get() {
+            return predictionSpread.value != null
+        }
+        set(value) {
+            field = value
+        }
 
     suspend fun savePredictionToDataStore(prediction: Prediction) {
         appViewModel.writePrediction(prediction)
@@ -75,9 +83,9 @@ class ChatViewModel @Inject constructor (
         predictionListOfCards.value = cards
     }
 
-    fun updateSelectedSpread(spread: Spread)  {
+    fun updateSelectedSpread(spread: Spread?)  {
         predictionSpread.value = spread
-        spreadSelected.value = true
+        spreadSelected = true
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -85,7 +93,7 @@ class ChatViewModel @Inject constructor (
         message: ChatMessage,
     ) {
         if(message.author.id == "user" && ifExpectingPrediction.value) {
-            val spread = predictionSpread.value
+            val spread = predictionSpread.value ?: Spread.THREE_CARDS
             val cardsDrawn = spread.draw()
             val draw = Draw(
                 spread = spread,
@@ -116,7 +124,7 @@ class ChatViewModel @Inject constructor (
                 PredictRequest(
                     q=question.value,
                     cardsPicked = cardsString,
-                    spread = predictionSpread.value.name
+                    spread = predictionSpread.value?.name ?: Spread.THREE_CARDS.name
                 )
             )
             val response = prediction.body()?.prediction ?: "Sorry, I can't help with that"
@@ -129,14 +137,14 @@ class ChatViewModel @Inject constructor (
             val pred = Prediction(
                 question = question.value,
                 prediction = response,
-                dateTime = LocalDateTime.now().toString(),
-                spread = predictionSpread.value,
+                dateTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
+                spread = predictionSpread.value?:Spread.THREE_CARDS,
                 cards = predictionListOfCards.value
             )
             savePredictionToDataStore(pred) // write prediction locally into DataStore
             ifExpectingPrediction.value = false
             showController.value = !showController.value
-            spreadSelected.value = false
+            spreadSelected = false
         }
     }
 
@@ -157,6 +165,11 @@ class ChatViewModel @Inject constructor (
         _listOfCardStates.add(
             mutableListOf(false)
         )
+        if (predictionSpread.value != null) {
+            _messages.add(ChatDataSource.spreadMessage)
+        } else {
+            _messages.add(ChatDataSource.initState)
+        }
     }
 }
 
@@ -186,7 +199,7 @@ data class TarotReader(
 data class Prediction (
     val question: String,
     val prediction: String,
-    val dateTime: String,
+    val dateTime: Long,
     val spread: Spread,
     val cards: List<TarotCard>
 )

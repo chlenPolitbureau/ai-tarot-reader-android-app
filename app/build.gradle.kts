@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 //    id("com.google.protobuf") version "0.9.1"
 //    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
 }
@@ -87,6 +88,9 @@ dependencies {
     implementation ("com.google.protobuf:protobuf-javalite:3.10.0")
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation ("androidx.core:core-splashscreen:1.0.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation(libs.material)
     implementation(libs.navigation.compose)
