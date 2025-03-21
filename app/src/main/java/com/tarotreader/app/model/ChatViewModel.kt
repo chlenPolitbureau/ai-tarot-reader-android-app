@@ -12,6 +12,7 @@ import com.tarotreader.app.data.ChatDataSource
 import com.tarotreader.app.data.PredictRequest
 import com.tarotreader.app.data.RetrofitClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
@@ -26,8 +27,10 @@ class ChatViewModel @Inject constructor (
     val predictionSpread: MutableState<Spread?> = mutableStateOf(initialSpread)
     private var _messages = mutableStateListOf<ChatMessage>()
     private val _listOfCardStates = mutableStateListOf<MutableList<Boolean>>()
+    private val _listOfIfShowns = mutableStateListOf<Boolean>()
     val messages = _messages
     val listOfCardStates = _listOfCardStates
+    val listOfIfShowns = _listOfIfShowns
     val ifExpectingPrediction: MutableState<Boolean> = mutableStateOf(false)
     val question: MutableState<String> = mutableStateOf("")
     val showChips: MutableState<Boolean> = mutableStateOf(true)
@@ -45,10 +48,8 @@ class ChatViewModel @Inject constructor (
         appViewModel.writePrediction(prediction)
     }
 
-    private fun updateMessage(index: Int, message: ChatMessage) {
-        _messages[index] = _messages[index].copy(
-            ifLoaded = true
-        )
+    fun updateMessage(index: Int) {
+        _listOfIfShowns[index] = true
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -57,15 +58,16 @@ class ChatViewModel @Inject constructor (
     ) {
         viewModelScope.launch {
             if (chatMessage.author.id == "user") {
-                _messages.add(chatMessage)
+//                _messages.add(chatMessage)
+                addMessage(chatMessage, true)
                 manageMessage(chatMessage)
                 question.value = chatMessage.text
                 showController.value = !showController.value
                 _listOfCardStates.add(mutableListOf(false))
             } else if (chatMessage.author.id == "app") {
                 val index = _messages.size
-                _messages.add(chatMessage)
-                updateMessage(index, chatMessage)
+//                _messages.add(chatMessage)
+                addMessage(chatMessage, false)
                 if (chatMessage.draw != null) {
                     _listOfCardStates.add(
                         chatMessage.draw.cardsFlipState
@@ -78,6 +80,11 @@ class ChatViewModel @Inject constructor (
             } else {
             }
         }
+    }
+
+    private fun addMessage(message: ChatMessage, ifShown: Boolean) {
+        _messages.add(message)
+        _listOfIfShowns.add(ifShown)
     }
 
     fun flipCard(
@@ -179,9 +186,11 @@ class ChatViewModel @Inject constructor (
             mutableListOf(false)
         )
         if (predictionSpread.value != null) {
-            _messages.add(ChatDataSource.spreadMessage)
+//            _messages.add(ChatDataSource.spreadMessage)
+            addMessage(ChatDataSource.spreadMessage, false)
         } else {
-            _messages.add(ChatDataSource.initState)
+//            _messages.add(ChatDataSource.initState)
+            addMessage(ChatDataSource.initState, false)
         }
     }
 }

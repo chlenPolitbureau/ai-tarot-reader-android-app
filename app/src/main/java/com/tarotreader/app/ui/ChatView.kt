@@ -74,6 +74,7 @@ fun ChatView(
     chatViewModel: ChatViewModel,
     spreadParameter: Spread? = null
 ) {
+
     LaunchedEffect(key1 = true) {
         if (spreadParameter != null) {
             chatViewModel.updateSelectedSpread(spreadParameter)
@@ -347,6 +348,7 @@ fun EndFirstLazyColumn(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val ifShownList = chatViewModel.listOfIfShowns
 
     LazyColumn(
         state = listState,
@@ -355,14 +357,24 @@ fun EndFirstLazyColumn(
     ) {
         items(chatViewModel.messages.size) { index ->
             if (chatViewModel.messages[index].draw != null) {
-                Message(message = chatViewModel.messages[index])
+                Message(
+                    message = chatViewModel.messages[index],
+                    ifShown = ifShownList[index],
+                    chatViewModel = chatViewModel,
+                    messageIndex = index
+                )
                 DrawMessage(
                     n = index,
                     chatViewModel = chatViewModel,
                     postback = { chatViewModel.makePrediction() }
                 )
             } else {
-                Message(message = chatViewModel.messages[index])
+                Message(
+                    message = chatViewModel.messages[index],
+                    ifShown = ifShownList[index],
+                    chatViewModel = chatViewModel,
+                    messageIndex = index
+                )
             }
         }
     }
@@ -419,7 +431,10 @@ fun ChatInput(
 
 @Composable
 fun ChatItemBubble(
-    message: ChatMessage
+    message: ChatMessage,
+    ifShown: Boolean,
+    chatViewModel: ChatViewModel,
+    messageIndex: Int
 ) {
     Column(
         modifier = Modifier
@@ -446,7 +461,9 @@ fun ChatItemBubble(
                     gif = R.drawable.three_dots,
                     text = message.text,
                     color = Color.Black,
-                    wasLoaded = message.ifLoaded
+                    wasLoaded = ifShown,
+                    chatViewModel = chatViewModel,
+                    messageIndex = messageIndex
                 )
             }
             else if (message.draw != null) {
@@ -497,38 +514,18 @@ fun DrawMessage(
 @Composable
 fun Message(
     message: ChatMessage,
+    ifShown: Boolean,
+    chatViewModel: ChatViewModel,
+    messageIndex: Int
 ) {
     Column {
-        ChatItemBubble(message = message)
+        ChatItemBubble(
+            message = message,
+            ifShown = ifShown,
+            chatViewModel = chatViewModel,
+            messageIndex = messageIndex
+        )
         }
-}
-
-@Composable
-fun TypeWriter(
-    text: String,
-    color: Color = Color.Black
-) {
-    var textToDisplay by remember { mutableStateOf("") }
-
-    LaunchedEffect(Unit) {
-        for (i in 1 .. text.length) {
-            textToDisplay = text.substring(0, i)
-            delay(20)
-        }
-    }
-
-    Text(text = textToDisplay, color = color)
-}
-
-@Preview
-@Composable
-fun ChatMessagePreview() {
-    ChatItemBubble(
-        message = ChatMessage(
-            text = "Hello, worldspdjoijdfi jsad'ofkpoqkerf'poqekrogkeor!",
-            author = Author("1")
-            )
-    )
 }
 
 @Composable
@@ -537,16 +534,20 @@ fun GifThenText(
     text: String,
     color: Color,
     wasLoaded: Boolean,
+    messageIndex: Int,
+    chatViewModel: ChatViewModel,
     modifier: Modifier= Modifier
 ) {
-    var showGif by remember { mutableStateOf(true) }
-//    var hasGifBeenShown by remember { mutableStateOf(wasLoaded) }
+    var showGif by remember { mutableStateOf(!wasLoaded) }
 
     LaunchedEffect(key1 = true) {
         if (!wasLoaded) {
             val randomInterval = (500..2200).random().toLong()
             delay(randomInterval) // Wait for 2 seconds
             showGif = false // Change to text after 2 seconds}
+            chatViewModel.updateMessage(
+                messageIndex
+            )
         }
     }
 
