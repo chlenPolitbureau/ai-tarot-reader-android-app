@@ -3,6 +3,8 @@ package com.tarotreader.app.ui
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,9 +13,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -22,17 +34,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.substring
 import androidx.compose.ui.unit.dp
 import com.tarotreader.app.model.Prediction
+import com.tarotreader.app.ui.theme.Typography
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PredictionHistoryView(predictions: List<Prediction>) {
 
     val reversed = predictions.reversed()
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val predictionToShow = remember { mutableStateOf<Prediction?>(null) }
+
+    fun showBottomSheet(prediction: Prediction) {
+        showBottomSheet = true
+        predictionToShow.value = prediction
+    }
 
     Column {
         if (reversed.isEmpty()) {
@@ -51,7 +74,65 @@ fun PredictionHistoryView(predictions: List<Prediction>) {
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
-                        PredictionCard(reversed[index])
+                        PredictionCard(
+                            prediction = reversed[index],
+                            modifier = Modifier.clickable {
+                                showBottomSheet(reversed[index])
+                            }
+                        )
+                    }
+                }
+                if (showBottomSheet) {
+                    ModalBottomSheet(onDismissRequest = {
+                        showBottomSheet = false
+                    }, sheetState = sheetState) {
+                        predictionToShow.value?.let {
+                            val scrollState = rememberScrollState()
+                            val formatter = DateTimeFormatter.ofPattern("MMMM dd, y, H:mm")
+
+                            Column (
+                              modifier = Modifier.verticalScroll(
+                                  state = scrollState
+                              )
+                            ) {
+                                Text(
+                                    text = "Prediction setup",
+                                    style = Typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(top = 10.dp, bottom = 5.dp)
+                                        .fillMaxWidth()
+                                )
+
+                                Text(
+                                    text =  "Spread: ${it.spread.toReadableString()} \n" +
+                                            "Date: ${Instant.ofEpochMilli(it.dateTime).atOffset(ZoneOffset.UTC).format(formatter)} \n" +
+                                            "Cards drawn: ${it.cards.joinToString()}"
+                                )
+
+                                Text(
+                                    text = "Question",
+                                    style = Typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(top = 10.dp, bottom = 5.dp)
+                                        .fillMaxWidth()
+                                )
+
+                                Text(
+                                    text = it.question,
+                                )
+
+                                Text(
+                                    text = "Reading",
+                                    style = Typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(top = 20.dp, bottom = 5.dp)
+                                        .fillMaxWidth()
+                                )
+                                Text(
+                                    text = it.prediction
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -61,15 +142,13 @@ fun PredictionHistoryView(predictions: List<Prediction>) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PredictionCard(
-    prediction: Prediction
+    prediction: Prediction,
+    modifier: Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-
-            }
     ) {
         val formatter = DateTimeFormatter.ofPattern("H:mm")
         Column(modifier = Modifier.padding(8.dp)) {
@@ -91,23 +170,10 @@ fun PredictionCard(
             }
             Row {
                 Text(
-                    text= "Spread: ${prediction.spread.toString()}"
+                    text= "Spread: ${prediction.spread.toReadableString()}"
                 )
             }
-            Row {
-                Text(
-                    text= prediction.prediction,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+
         }
     }
-}
-
-@Composable
-fun PredictionBottomDrawer(
-    prediction: Prediction
-) {
-
 }

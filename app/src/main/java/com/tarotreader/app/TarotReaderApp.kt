@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -63,7 +64,7 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TarotReaderApp(
-    sharedPrefs: SharedPreferences,
+    startingScreen: kotlin.Any,
     appViewModel: AppViewModel,
     navController: NavHostController = rememberNavController()
 ) {
@@ -83,7 +84,6 @@ fun TarotReaderApp(
         it.type == CurrencyType.MANA
     }.amount
     val userName = dataStoreState.userName
-    val isFirstLaunch = sharedPrefs.getBoolean("isFirstLaunch", true)
 
     fun updateContentType(name: String) {
         contentType.value = name
@@ -113,8 +113,7 @@ fun TarotReaderApp(
                         currentScreen = screenTitle.value,
                         navController = navController,
                         showBackArrow = showBackArrow,
-                        userManaPoints = userManaPoints,
-                        username = userName
+                        userManaPoints = userManaPoints
                     )
                 }
             },
@@ -130,22 +129,19 @@ fun TarotReaderApp(
             innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = if (isFirstLaunch) Intro else Main,
+                startDestination = startingScreen,
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable<Intro> {
                     FeatureDescriptionScreen(
-                        onNextButtonClicked = {
-                            navController.navigate(Main)
-                        },
-                        sharedPrefs = sharedPrefs
+                        navController = navController,
+                        appViewModel = appViewModel
                     )
                 }
                 composable<Main> {
                     MainScreen(
                         appViewModel = appViewModel,
-                        navController = navController,
-                        sharedPrefs = sharedPrefs
+                        navController = navController
                     )
                 }
                 composable<Chat> {
@@ -164,8 +160,11 @@ fun TarotReaderApp(
                     )
                 }
                 composable<Learn> {
+                    val args = it.toRoute<Learn>()
+                    val startingTab = args.startingTab ?: 0
                     ContentTabs(
-                        navController = navController
+                        navController = navController,
+                        startingTab = startingTab
                     )
                 }
                 composable<PersonalSettings> {
@@ -219,11 +218,12 @@ fun TopAppBarClass(
         },
         actions = {
             Icon(
-                painter = painterResource(id = R.drawable.coins),
+                painter = painterResource(id = R.drawable.mana),
                 contentDescription = "Mana",
-                modifier = Modifier.padding(2.dp)
+                modifier = Modifier.size(40.dp),
+                tint = Color.Unspecified,
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(2.dp))
             Text(
                 text = manaPoints.toString(),
                 textAlign = TextAlign.End,
@@ -254,8 +254,7 @@ fun TarotReaderAppBar(
     showBackArrow: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    userManaPoints: Long,
-    username: String
+    userManaPoints: Long
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -263,7 +262,6 @@ fun TarotReaderAppBar(
     TopAppBarClass(currentScreen, modifier, drawerState, navController, showBackArrow, userManaPoints)
     NavDrawer(
         drawerState = drawerState,
-        username = username,
         scope = scope,
         navController = navController,
     ) {
@@ -290,14 +288,13 @@ fun RealBottomBar(
         BottomBarMenuItem(
             text = R.string.learn,
             icon = R.drawable.graduationcap,
-            navigate = { navController.navigate(Learn) }
+            navigate = { navController.navigate(Learn(startingTab = 0)) }
         ),
         BottomBarMenuItem(
             text = R.string.journal,
             icon = R.drawable.scroll,
             navigate = { navController.navigate(Journal) }
         )
-
     )
     NavigationBar(
         modifier = modifier.height(100.dp)
@@ -334,7 +331,9 @@ data class Chat(
 )
 
 @Serializable
-object Learn
+data class Learn(
+    val startingTab: Int? = 0
+)
 
 @Serializable
 object PersonalSettings

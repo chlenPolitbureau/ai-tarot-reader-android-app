@@ -54,8 +54,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun NavDrawer(
     drawerState: DrawerState,
-    modifier: Modifier = Modifier,
-    username: String,
     scope: CoroutineScope,
     navController: NavHostController,
     content: @Composable () -> Unit
@@ -81,11 +79,6 @@ fun NavDrawer(
                                 contentDescription = "Close"
                             )
                         }
-                    }
-                    if (username == "") {
-                        DrawerAuthCard()
-                    } else {
-
                     }
                     NavigationDrawerItem(
                         label = { Text("Personal Settings") },
@@ -116,40 +109,4 @@ fun NavDrawer(
         },
         content = {}
     )
-}
-
-@Composable
-fun DrawerAuthCard(
-    @DrawableRes avatar: Int = R.drawable.avatar_lazybones_sloth_svgrepo_com,
-    text: String = "Authorize and unlock unlimited possibilities"
-) {
-    Card() {
-        Column(
-            modifier = Modifier
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                painter = painterResource(id = avatar),
-                contentDescription = "Avatar",
-                modifier = Modifier.padding(2.dp)
-            )
-            Text(text)
-            Button(
-                onClick = { /*TODO*/ }
-            ) {
-                Text("Authorize")
-            }
-        }
-    }
-}
-
-enum class DrawerItems(
-//    val icon: Int,
-    val label: String
-) {
-    ACCOUNT_SETTINGS("Personal settings"),
-    READING_SETTINGS("Reading settings"),
-    RATE_APP("Rate the app"),
-    REMOVE_ADS("Remove ads")
 }

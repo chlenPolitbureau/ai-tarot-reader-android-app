@@ -12,10 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,9 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.tarotreader.app.Chat
 import com.tarotreader.app.R
+import com.tarotreader.app.data.ArticlesDataSource
+import com.tarotreader.app.model.Article
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
@@ -48,16 +50,52 @@ fun ContentViewPage(
         }
         "spread" -> {
             postback("Spread")
-            LayoutDescriptionViewPage(spread = Spread.valueOf(id ?: ""))
+            SpreadDescriptionViewPage(
+                spread = Spread.valueOf(id ?: ""),
+                navController = navController!!
+            )
+        }
+        "article" -> {
+            postback("Article")
+            ArticleViewPage(article = ArticlesDataSource.articles.find { it.id == id }!!)
+        }
+        else -> {
         }
     }
     }
 }
 
 @Composable
-fun ArticleViewPage() {
+fun ArticleViewPage(
+    article: Article,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Image(
+            painter = painterResource(id = article.img),
+            contentDescription = article.header,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
-}
+        Text(
+            text = article.header,
+            style = Typography.titleLarge,
+            modifier = Modifier.padding(10.dp)
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = article.fullText,
+            style = Typography.bodyMedium,
+            modifier = Modifier
+                .padding(5.dp)
+                .verticalScroll(rememberScrollState())
+        )
+        }
+    }
 
 @Composable
 fun CardDescriptionViewPage(
@@ -108,7 +146,8 @@ fun CardDescriptionViewPage(
                 Text(
                     text = stringResource(id = card.descriptionUpright),
                     style = Typography.bodyMedium,
-                    modifier = Modifier.padding(10.dp)
+                    modifier = Modifier
+                        .padding(10.dp)
                         .verticalScroll(rememberScrollState())
                 )
         }
@@ -116,8 +155,9 @@ fun CardDescriptionViewPage(
 }
 
 @Composable
-fun LayoutDescriptionViewPage(
-    spread: Spread
+fun SpreadDescriptionViewPage(
+    spread: Spread,
+    navController: NavHostController
 ) {
     Box(
         modifier = Modifier
@@ -145,9 +185,103 @@ fun LayoutDescriptionViewPage(
             )
         }
     }
-    Text(
-        text = spread.toString(),
-        style = Typography.titleSmall,
-        modifier = Modifier.padding(10.dp)
-    )
+    Column (
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SpreadDescriptionRow(spread = spread)
+
+        Row (
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .padding(15.dp)
+                .fillMaxWidth(),
+        ) {
+            Text(
+                text = spread.toReadableString(),
+                style = Typography.titleSmall,
+                textAlign = TextAlign.Center
+            )
+        }
+        Row (
+            modifier = Modifier
+                .padding(
+                    start = 15.dp, end = 15.dp, top = 25.dp, bottom = 10.dp
+                )
+                .fillMaxWidth(),
+        ) {
+            Text(
+                text = spread.shortDescription,
+                style = Typography.bodySmall,
+                textAlign = TextAlign.Justify
+            )
+        }
+        ElevatedButton(
+            onClick = {
+                navController.navigate(
+                    Chat(
+                        spread = spread
+                    )
+                )
+            },
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = "Try it out",
+                style = Typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+fun SpreadDescriptionRow(
+    spread: Spread
+) {
+    Row (
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column (
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Mana cost",
+                style = Typography.bodySmall
+            )
+            Text(
+                spread.manaCost.toString(),
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+        Column (
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Number of cards",
+                style = Typography.bodySmall
+            )
+            Text(
+                spread.nCards.toString(),
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+        Column (
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Affinity",
+                style = Typography.bodySmall
+            )
+            Text(
+                spread.affiliation.name,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun SpreadDescriptionViewPagePreview() {
+    SpreadDescriptionRow(spread = Spread.THREE_CARDS)
 }

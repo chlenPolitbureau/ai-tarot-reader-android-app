@@ -33,17 +33,19 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavHostController
+import com.tarotreader.app.Main
 import com.tarotreader.app.data.FeaturesDataSource
+import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.Feature
 import com.tarotreader.app.ui.theme.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeatureDescriptionScreen(
-    sharedPrefs: SharedPreferences,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    appViewModel: AppViewModel,
+    navController: NavHostController,
     featureList : List<Feature> = FeaturesDataSource.features,
-    onNextButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val pagerState = rememberPagerState { featureList.count() }
@@ -82,7 +84,9 @@ fun FeatureDescriptionScreen(
                     .align(Alignment.Center)
             )
             Button(
-                onClick = onNextButtonClicked,
+                onClick = {
+                    navController.navigate(Main)
+                },
                 modifier = modifier
                     .padding(bottom = 10.dp)
                     .align(Alignment.BottomCenter)
@@ -93,23 +97,24 @@ fun FeatureDescriptionScreen(
         }
     }
 
-    DisposableEffect(lifecycleOwner) {
-        // Create an observer that triggers our remembered callbacks
-        // for sending analytics events
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_START) {
-                sharedPrefs.edit().putBoolean("isFirstLaunch", false).apply()
-            } else if (event == Lifecycle.Event.ON_STOP) {
-
-            }
-        }
-        // Add the observer to the lifecycle
-        lifecycleOwner.lifecycle.addObserver(observer)
-        // When the effect leaves the Composition, remove the observer
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
+//    DisposableEffect(lifecycleOwner) {
+//        // Create an observer that triggers our remembered callbacks
+//        // for sending analytics events
+//        val observer = LifecycleEventObserver { _, event ->
+//            if (event == Lifecycle.Event.ON_START) {
+//                sharedPrefs.edit().putBoolean("isFirstLaunch", false).apply()
+//                appViewModel.updateFirstLaunch(false)
+//            } else if (event == Lifecycle.Event.ON_STOP) {
+//
+//            }
+//        }
+//        // Add the observer to the lifecycle
+//        lifecycleOwner.lifecycle.addObserver(observer)
+//        // When the effect leaves the Composition, remove the observer
+//        onDispose {
+//            lifecycleOwner.lifecycle.removeObserver(observer)
+//        }
+//    }
 }
                                                                                                                 
 @Composable

@@ -1,6 +1,5 @@
 package com.tarotreader.app.ui
 
-import android.content.SharedPreferences
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -14,13 +13,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -38,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tarotreader.app.Chat
@@ -50,11 +48,11 @@ import com.tarotreader.app.model.Prediction
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotCard
 import com.tarotreader.app.ui.theme.Typography
-import com.tarotreader.app.ui.theme.bkgrndDarkGrey
 import com.tarotreader.app.ui.theme.bkgrndGrey
 import com.tarotreader.app.ui.theme.poshGreen
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.launch
+import okhttp3.internal.UTC
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -63,22 +61,28 @@ import java.time.ZoneOffset
 fun MainScreen(
     appViewModel: AppViewModel,
     navController: NavHostController,
-    sharedPrefs: SharedPreferences
 ) {
     val appDataStoreState = appViewModel.uiState.collectAsState()
     val predictions = appDataStoreState.value.predictions
+    val scope = rememberCoroutineScope()
 
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
         val sessionLaunchTimeStampMillis =
             LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
+        val isFirstLaunch = appViewModel.isFirstLaunch.collectAsState()
 
         LaunchedEffect(key1 = true) {
+            // use lifecycle scope to wait until it's completed
+            // move all calculation to the viewmodel
             appViewModel.sessionLaunch(
                 lastSessionMillis = appDataStoreState.value.lastSessionDateTimeMilliSec,
                 nowMillis = sessionLaunchTimeStampMillis
             )
+            if (isFirstLaunch.value) {
+                appViewModel.updateFirstLaunch(false)
+            }
         }
 
         Column(
@@ -106,8 +110,7 @@ fun MainScreen(
             )
 
             StatsBlock(
-                predictionsList = predictions,
-                longestStreak = 2
+                predictionsList = predictions
             )
         }
     }
@@ -168,7 +171,7 @@ fun MainPathBlock(
         modifier = Modifier.fillMaxWidth()
     ) {
         PathBox(
-            image = R.drawable.path_yes_or_no,
+            image = R.drawable.yes_or_no,
             headline = "Yes or No",
             route = Chat(
                 spread = Spread.SINGLE_CARD
@@ -177,8 +180,8 @@ fun MainPathBlock(
         )
 
         PathBox(
-            image = R.drawable.path_yes_or_no,
-            headline = "Daily Reading",
+            image = R.drawable.daily_inspiration,
+            headline = "Daily Inspiration",
             route = Chat(
                 spread = Spread.THREE_CARDS
             ),
@@ -195,13 +198,12 @@ fun PathBox(
     backgroundColor: Color = bkgrndGrey,
     navController: NavHostController,
     modifier: Modifier = Modifier
-        .height(300.dp)
-        .width(195.dp)
+        .height(320.dp)
+        .width(210.dp)
         .fillMaxWidth()
-
 ) {
     Box(
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.BottomCenter,
         modifier = modifier.
                             clickable {
                                 navController.navigate(route)
@@ -218,12 +220,13 @@ fun PathBox(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(backgroundColor)
+                .height(60.dp)
         ) {
             Text(
                 text = headline,
                 style = Typography.titleMedium,
                 modifier = Modifier.padding(
-                    20.dp
+                    10.dp
                 )
             )
         }
@@ -232,7 +235,6 @@ fun PathBox(
 
 @Composable
 fun StatsBlock(
-    longestStreak: Long,
     predictionsList: PersistentList<Prediction>,
     modifier: Modifier = Modifier.fillMaxWidth()
 ) {
@@ -246,17 +248,23 @@ fun StatsBlock(
     val favouriteCard = if (counts.isNotEmpty()) counts.filterValues { it == maxCount }.keys.first() else
         TarotCard.Temperance
 
-    fun countDifferencesLessThanFixed(sortedList: List<Long>, fixedInt: Int = 100000): Int {
+    fun countDifferencesLessThanFixed(sortedList: List<Long>, fixedInt: Int = 86400000): Int {
         var count = if(sortedList.isEmpty()) 0 else 1
+        var listOfDates: List<LocalDateTime> = if(count > 0) mutableListOf(
+            Instant.ofEpochMilli(sortedList[0]).atOffset(ZoneOffset.UTC).toLocalDate().atStartOfDay()
+        ) else mutableListOf()
 
         // Iterate through the sorted list and calculate the differences
         for (i in 0 until sortedList.size - 1) {
             val difference = sortedList[i + 1] - sortedList[i]
             if (difference < fixedInt) {
                 count++
+                listOfDates = listOfDates.plus(
+                    Instant.ofEpochMilli(sortedList[i + 1]).atOffset(ZoneOffset.UTC).toLocalDate().atStartOfDay()
+                )
             }
         }
-        return count
+        return listOfDates.distinct().size
     }
 
     val predictionTimeStampList = mutableListOf<Long>()
@@ -264,7 +272,10 @@ fun StatsBlock(
         predictionTimeStampList.add(it.dateTime)
     }
     val sortedList = predictionTimeStampList.sorted()
-    val streak = countDifferencesLessThanFixed(sortedList)
+    println(sortedList)
+    val streak = countDifferencesLessThanFixed(
+        sortedList
+    )
 
     Card(
         modifier = Modifier.padding(top = 40.dp),
@@ -280,35 +291,54 @@ fun StatsBlock(
             modifier = modifier
         ) {
             Row (
-                modifier = Modifier.padding(start = 5.dp, top = 10.dp, bottom = 15.dp)
+                modifier = Modifier.padding(start = 10.dp, top = 10.dp, bottom = 15.dp)
             ) {
                 Text(
                     text = "Your stats",
                     style = Typography.bodyMedium
                 )
             }
-            StatsPlaceholder(
-                icon = Icons.Default.Build,
-                text = "Total predictions",
-                value = predictionsList.size
-            )
-            StatsPlaceholder(
-                icon = Icons.Default.Build,
-                text = "Favourite card",
-                value = favouriteCard.name
-            )
-            StatsPlaceholder(
-                icon = Icons.Default.Build,
-                text = "Longest streak, days",
-                value = streak
-            )
+            
+            if(predictionsList.size > 0) {
+                StatsPlaceholder(
+                    icon = R.drawable.num_predictions,
+                    text = "Total predictions",
+                    value = predictionsList.size
+                )
+                StatsPlaceholder(
+                    icon = R.drawable.popular_tarot_card,
+                    text = "Favourite card",
+                    value = favouriteCard.toString()
+                )
+                StatsPlaceholder(
+                    icon = R.drawable.streak,
+                    text = "Longest streak, days",
+                    value = streak
+                )
+            } else {
+                Column (
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.start_reading),
+                        contentDescription = "Start reading",
+                        modifier = Modifier.size(130.dp)
+                    )
+                    Text(
+                        "Start reading to show your stats"
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
 fun StatsPlaceholder(
-    icon: ImageVector,
+    @DrawableRes icon: Int,
     text: String,
     value: kotlin.Any
 ) {
@@ -317,8 +347,10 @@ fun StatsPlaceholder(
         modifier = Modifier.padding(start = 5.dp, top = 5.dp, end = 10.dp, bottom = 10.dp)
     ) {
         Icon(
-            imageVector = icon,
-            contentDescription = "Total predictions"
+            painter = painterResource(id = icon),
+            contentDescription = "Total predictions",
+            tint = Color.Unspecified,
+            modifier = Modifier.size(40.dp)
         )
         Text(
             text,
@@ -327,7 +359,9 @@ fun StatsPlaceholder(
         )
         Text(
             "$value",
-            modifier = Modifier.padding(start = 15.dp, end = 20.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(start = 15.dp, end = 20.dp)
+                .fillMaxWidth(),
             style = Typography.bodyLarge,
             textAlign = TextAlign.End
         )

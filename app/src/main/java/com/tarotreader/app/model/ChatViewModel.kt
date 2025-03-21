@@ -45,6 +45,12 @@ class ChatViewModel @Inject constructor (
         appViewModel.writePrediction(prediction)
     }
 
+    private fun updateMessage(index: Int, message: ChatMessage) {
+        _messages[index] = _messages[index].copy(
+            ifLoaded = true
+        )
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun addMessage(
         chatMessage: ChatMessage,
@@ -57,7 +63,9 @@ class ChatViewModel @Inject constructor (
                 showController.value = !showController.value
                 _listOfCardStates.add(mutableListOf(false))
             } else if (chatMessage.author.id == "app") {
+                val index = _messages.size
                 _messages.add(chatMessage)
+                updateMessage(index, chatMessage)
                 if (chatMessage.draw != null) {
                     _listOfCardStates.add(
                         chatMessage.draw.cardsFlipState
@@ -141,6 +149,10 @@ class ChatViewModel @Inject constructor (
                 spread = predictionSpread.value?:Spread.THREE_CARDS,
                 cards = predictionListOfCards.value
             )
+            appViewModel.updateCurrency(
+                type = CurrencyType.MANA,
+                amount = predictionSpread.value?.manaCost?.toLong()?.times(-1) ?: -5L
+            )
             savePredictionToDataStore(pred) // write prediction locally into DataStore
             ifExpectingPrediction.value = false
             showController.value = !showController.value
@@ -155,7 +167,8 @@ class ChatViewModel @Inject constructor (
         addMessage(
             ChatMessage(
                 text = text,
-                author = Author("user")
+                author = Author("user"),
+                ifLoaded = true
             )
         )
         showChips.value = false
@@ -182,7 +195,8 @@ data class ChatMessage(
     val author: Author,
     val ifFullWidth: Boolean = false,
     var showOptions: Boolean = true,
-    val draw: Draw? = null
+    val draw: Draw? = null,
+    var ifLoaded: Boolean = false
 ) {
     val isFromMe: Boolean
         get() = author.id != "app"

@@ -1,5 +1,7 @@
 package com.tarotreader.app.ui
 
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,7 +49,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.tarotreader.app.AppSettings
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.tarotreader.app.R
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.Author
@@ -58,6 +60,11 @@ import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotReader
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.platform.LocalContext
+import com.tarotreader.app.ui.theme.poshGreen
 
 @Composable
 fun ChatView(
@@ -218,7 +225,6 @@ fun ChooseSpread(
         .fillMaxWidth()
         .padding(6.dp)
 ) {
-
     val spreads = Spread.entries
 
     Column(
@@ -242,7 +248,7 @@ fun ChooseSpread(
                     spreads[0]
                 ) }
             ) {
-                Text(spreads[0].description)
+                Text(spreads[0].shortDescription)
             }
             ElevatedButton(
                 modifier = Modifier.defaultMinSize(
@@ -252,7 +258,7 @@ fun ChooseSpread(
                     spreads[1]
                 ) }
             ) {
-                Text(spreads[1].description)
+                Text(spreads[1].shortDescription)
             }
         }
         Row (
@@ -264,21 +270,21 @@ fun ChooseSpread(
                     spreads[2]
                 ) }
             ) {
-                Text(spreads[2].description)
+                Text(spreads[2].shortDescription)
             }
             ElevatedButton(
                 onClick = { chatViewModel.updateSelectedSpread(
                     spreads[3]
                 ) }
             ) {
-                Text(spreads[3].description)
+                Text(spreads[3].shortDescription)
             }
             ElevatedButton(
                 onClick = { chatViewModel.updateSelectedSpread(
                     spreads[4]
                 ) }
             ) {
-                Text(spreads[4].description)
+                Text(spreads[4].shortDescription)
             }
         }
     }
@@ -435,10 +441,26 @@ fun ChatItemBubble(
                 .padding(12.dp)
                 .widthIn(max = 270.dp)
         ) {
+            if (!message.isFromMe && message.draw == null) {
+                GifThenText(
+                    gif = R.drawable.three_dots,
+                    text = message.text,
+                    color = Color.Black,
+                    wasLoaded = message.ifLoaded
+                )
+            }
+            else if (message.draw != null) {
                 Text(
                     text = message.text,
-                    color = if (message.isFromMe) Color.White else Color.Black
+                    color = Color.Black
                 )
+            }
+            else {
+                Text(
+                    text = message.text,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -454,7 +476,15 @@ fun DrawMessage(
             .fillMaxWidth()
             .padding(start = 8.dp, end = 8.dp)
     ) {
-        Card {
+        Card (
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
+            ),
+            border = BorderStroke(
+                1.dp,
+                color = poshGreen,
+            )
+        ) {
             Shuffle(
                 n = n,
                 chatViewModel = chatViewModel,
@@ -499,4 +529,47 @@ fun ChatMessagePreview() {
             author = Author("1")
             )
     )
+}
+
+@Composable
+fun GifThenText(
+    @DrawableRes gif: Int,
+    text: String,
+    color: Color,
+    wasLoaded: Boolean,
+    modifier: Modifier= Modifier
+) {
+    var showGif by remember { mutableStateOf(true) }
+//    var hasGifBeenShown by remember { mutableStateOf(wasLoaded) }
+
+    LaunchedEffect(key1 = true) {
+        if (!wasLoaded) {
+            val randomInterval = (500..2200).random().toLong()
+            delay(randomInterval) // Wait for 2 seconds
+            showGif = false // Change to text after 2 seconds}
+        }
+    }
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        if (showGif) {
+            // Display the GIF
+            val context = LocalContext.current
+            val painter = rememberDrawablePainter(
+                drawable = getDrawable(
+                    context,
+                    gif
+                )
+            )
+            Image(
+                painter = painter,
+                contentDescription = "Loading animation",
+            )
+        } else {
+            // Display the text
+            Text(
+                text = text,
+                color = color
+            )
+        }
+    }
 }

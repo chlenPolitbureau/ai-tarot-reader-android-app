@@ -91,6 +91,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation ("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.35.0-alpha")
+//    implementation("com.google.android.gms:play-services-ads:23.1.0")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation(libs.material)
     implementation(libs.navigation.compose)

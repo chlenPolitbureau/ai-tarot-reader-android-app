@@ -49,9 +49,10 @@ import com.tarotreader.app.ui.theme.Typography
 @Composable
 fun ContentTabs(
     learningViewModel: LearningViewModel = LearningViewModel(),
-    navController: NavHostController
+    navController: NavHostController,
+    startingTab: Int = 0
 ) {
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableStateOf(startingTab) }
     val titles = listOf("Cards", "Spreads", "Articles")
 
     Column (
@@ -151,7 +152,7 @@ fun SpreadsContent(
     LazyColumn {
         items(affiliations.size) { index ->
             Text(
-                "Spreads for " + affiliations[index].name,
+                affiliations[index].toString() + " Spreads",
                 style = Typography.titleSmall,
                 modifier = Modifier.padding(8.dp)
                 )
@@ -171,7 +172,9 @@ fun SpreadsContent(
                                 )
                             )
                         },
-                        modifier = Modifier.padding(end = 18.dp, bottom = 40.dp)
+                        modifier = Modifier.padding(end = 18.dp, bottom = 40.dp).widthIn(
+                            max = 240.dp
+                        ).height(260.dp)
                     )
                 }
             }
@@ -189,7 +192,14 @@ fun ArticlesContent(
         items(dataSource.articles.size) { index ->
             ArticlePreviewCard(
                 article = dataSource.articles[index],
-                onClick = {}
+                onClick = {
+                    navController.navigate(
+                        Content(
+                            type = "article",
+                            id = dataSource.articles[index].id
+                        )
+                    )
+                }
             )
         }
     }
@@ -229,7 +239,9 @@ fun SpreadCardComposable(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable {
+            onClick()
+        },
         shape = RoundedCornerShape(16.dp)
     ) {
         Column {
@@ -245,13 +257,7 @@ fun SpreadCardComposable(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(text = spread.toReadableString())
-                Text(text = spread.description)
-                Button(
-                    onClick = onClick,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text(text = "Learn more")
-                }
+                Text(text = spread.shortDescription)
             }
         }
     }}

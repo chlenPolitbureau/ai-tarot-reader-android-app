@@ -1,5 +1,6 @@
 package com.tarotreader.app.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -64,7 +66,7 @@ fun SingleCardLayout(
     postback: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
+    ConstraintLayout(modifier = Modifier.fillMaxWidth().background(Color.Transparent)) {
         val (lazyRow) = createRefs()
         LazyRow(
             modifier = modifier
@@ -73,7 +75,9 @@ fun SingleCardLayout(
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(10.dp)
+            ,
             horizontalArrangement = Arrangement.Center
         ) {
             items(draw.listOfCards.size) { index ->
@@ -87,7 +91,8 @@ fun SingleCardLayout(
                     modifier = Modifier
                         .fillParentMaxWidth(.33f)
                         .aspectRatio(1f),
-                    postback = postback
+                    postback = postback,
+                    id = 1
                 )
             }
         }
@@ -102,7 +107,7 @@ fun ThreeCardsLayout(
     n: Int,
     postback: () -> Unit
 ) {
-    ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
+    ConstraintLayout(modifier = Modifier.fillMaxWidth().background(Color.Transparent)) {
         val (lazyRow) = createRefs()
         LazyRow(
             modifier = Modifier
@@ -125,7 +130,8 @@ fun ThreeCardsLayout(
                     modifier = Modifier
                         .fillParentMaxWidth(.33f)
                         .aspectRatio(1f),
-                    postback = postback
+                    postback = postback,
+                    id = index + 1
                 )
             }
         }
@@ -144,7 +150,9 @@ fun PyramidLayout (
         bottom = 4.dp
     )
 ) {
-    Column {
+    Column (
+        modifier = Modifier.background(Color.Transparent)
+    ) {
         Row (
             modifier = modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
@@ -157,7 +165,8 @@ fun PyramidLayout (
                     index = 0
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 1
             )
         }
         Row (
@@ -172,7 +181,8 @@ fun PyramidLayout (
                     index = 1
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 2
             )
             RotatableCard(
                 card = draw.listOfCards[2],
@@ -182,7 +192,8 @@ fun PyramidLayout (
                     index = 2
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 3
             )
         }
         Row (
@@ -197,7 +208,8 @@ fun PyramidLayout (
                     index = 3
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 4
             )
             RotatableCard(
                 card = draw.listOfCards[4],
@@ -207,7 +219,8 @@ fun PyramidLayout (
                     index = 4
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 5
             )
             RotatableCard(
                 card = draw.listOfCards[5],
@@ -217,7 +230,8 @@ fun PyramidLayout (
                     index = 5
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 6
             )
         }
     }
@@ -236,7 +250,7 @@ fun BrokenHeartLayout (
     )
 ) {
     Row (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(Color.Transparent),
         horizontalArrangement = Arrangement.Center
     ) {
         Column (
@@ -251,17 +265,19 @@ fun BrokenHeartLayout (
                     index = 0
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 1
             )
             RotatableCard(
                 card = draw.listOfCards[2],
                 rotatedState = flipState[2],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
-                    index = 3
+                    index = 2
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 3
             )
         }
         Spacer(modifier = Modifier.width(10.dp))
@@ -274,30 +290,33 @@ fun BrokenHeartLayout (
                 rotatedState = flipState[4],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
-                    index = 0
+                    index = 4
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 5
             )
             RotatableCard(
                 card = draw.listOfCards[5],
                 rotatedState = flipState[5],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
-                    index = 3
+                    index = 5
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 6
             )
             RotatableCard(
                 card = draw.listOfCards[6],
                 rotatedState = flipState[6],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
-                    index = 3
+                    index = 6
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 7
             )
         }
         Spacer(modifier = Modifier.width(10.dp))
@@ -313,17 +332,19 @@ fun BrokenHeartLayout (
                     index = 1
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 2
             )
             RotatableCard(
                 card = draw.listOfCards[3],
                 rotatedState = flipState[3],
                 flip = { chatViewModel.flipCard(
                     nMessage = n,
-                    index = 2
+                    index = 3
                 ) },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 4
             )
         }
     }
@@ -339,7 +360,7 @@ fun HealingHeartsLayout (
     modifier: Modifier = Modifier
 ) {
     Row (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(Color.Transparent),
         horizontalArrangement = Arrangement.Center
     ) {
         Column(
@@ -356,7 +377,8 @@ fun HealingHeartsLayout (
                     )
                 },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 1
             )
             RotatableCard(
                 card = draw.listOfCards[2],
@@ -368,7 +390,8 @@ fun HealingHeartsLayout (
                     )
                 },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 3
             )
             RotatableCard(
                 card = draw.listOfCards[4],
@@ -380,7 +403,8 @@ fun HealingHeartsLayout (
                     )
                 },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 5
             )
         }
         Spacer(modifier = Modifier.width(40.dp))
@@ -398,7 +422,8 @@ fun HealingHeartsLayout (
                     )
                 },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 2
             )
             RotatableCard(
                 card = draw.listOfCards[3],
@@ -410,7 +435,8 @@ fun HealingHeartsLayout (
                     )
                 },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 4
             )
             RotatableCard(
                 card = draw.listOfCards[5],
@@ -422,7 +448,8 @@ fun HealingHeartsLayout (
                     )
                 },
                 modifier = Modifier,
-                postback = postback
+                postback = postback,
+                id = 6
             )
         }
     }

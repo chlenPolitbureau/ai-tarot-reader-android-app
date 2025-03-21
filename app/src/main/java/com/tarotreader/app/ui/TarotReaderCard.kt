@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tarotreader.app.R
+import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.model.Spread
 import com.tarotreader.app.model.TarotReader
@@ -37,30 +39,32 @@ fun TarotReaderCard(
     reader: TarotReader,
     chatViewModel: ChatViewModel
 ) {
-    val questionAsked by chatViewModel.question
     val spreadSelected by chatViewModel.predictionSpread
-    val q = if (questionAsked.isNotEmpty()) "yes" else "no"
 
-    Card {
+    Card (
+        modifier = Modifier.height(150.dp)
+    ) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+
             ) {
                 // 1. Avatar Column
                 Image(
-                    painter = painterResource(R.drawable.avatar_lazybones_sloth_svgrepo_com),
+                    painter = painterResource(R.drawable.frog_mascot),
                     contentDescription = "Avatar of ${reader.name}",
                     modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
+                        .width(150.dp)
+                        .fillMaxHeight()
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 // 2. Name and Description Column
-                Column {
+                Column (
+                    modifier = Modifier.padding(top=15.dp)
+                ) {
                     Text(
                         text = reader.name,
                         fontWeight = FontWeight.Bold,
@@ -73,27 +77,16 @@ fun TarotReaderCard(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     // Online Indicator
-                    if (reader.isOnline) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(Color.Green)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Selected Spread: ${spreadSelected?.toReadableString()}"
-                    )
-                    Text(
-                        text = "Question asked: ${q}"
+                        text = "Spread: ${if(spreadSelected != null) 
+                            spreadSelected?.toReadableString() else "not selected"}"
                     )
                 }
             }
         }
     }
 }
-//
+
 //@Preview
 //@Composable
 //fun TarotReaderCardPreview() {
@@ -104,7 +97,6 @@ fun TarotReaderCard(
 //            shortDescription = "I'm a Tarot Reader!",
 //            isOnline = true
 //        ),
-//        spread = Spread.THREE_CARDS,
-//        question = ""
+//        chatViewModel =
 //    )
 //}

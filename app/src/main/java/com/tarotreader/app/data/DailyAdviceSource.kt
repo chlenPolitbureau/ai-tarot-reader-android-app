@@ -23,9 +23,8 @@ object DailyAdviceSource {
             img = R.drawable.learnspreadsthumbnail,
             header = "Learn about Spreads",
             bkgrndColor = bkgrndGrey,
-            route = Content(
-                type = "spread",
-                id = "SINGLE_CARD"
+            route = Learn(
+                startingTab = 1
             )
         ),
         DailyAdvice(
@@ -38,7 +37,9 @@ object DailyAdviceSource {
             img = R.drawable.rewievpredictionsthumbnail,
             header = "Blog post 1",
             bkgrndColor = bkgrndGrey,
-            route = Learn
+            route = Learn(
+                startingTab = 2
+            )
         )
     )
 }

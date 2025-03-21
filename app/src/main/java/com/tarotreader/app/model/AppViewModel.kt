@@ -1,14 +1,19 @@
 package com.tarotreader.app.model
 
 import android.content.SharedPreferences
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.tarotreader.app.AppSettings
 import com.tarotreader.app.data.DSManager
 import com.tarotreader.app.data.DailyAdviceSource
+import com.tarotreader.app.data.PreferencesManager
+import com.tarotreader.app.data.PreferencesManager.Companion.isFirstOpen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDateTime
@@ -18,7 +23,7 @@ import java.util.Locale
 
 class AppViewModel(
     private val appSettingsDataStoreManager: DSManager,
-    private val sharedPreferences: SharedPreferences
+    private val preferencesManager: PreferencesManager
 ): ViewModel() {
 
     private val nowTimestampMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
@@ -26,44 +31,24 @@ class AppViewModel(
     private val _uiState = MutableStateFlow(
         AppSettings()
     )
-    private val _sharedPreferences = MutableStateFlow(
-        sharedPreferences
+
+    val isFirstLaunch: StateFlow<Boolean> = preferencesManager.isFirstLaunch.stateIn(
+        scope = viewModelScope,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = true
     )
 
-    val sharedPreferencesState: StateFlow<SharedPreferences> = _sharedPreferences.asStateFlow()
     val uiState: StateFlow<AppSettings> = _uiState.asStateFlow()
     val dailyAdviceList = DailyAdviceSource.listOfAdvice
-
-
-    private fun collectAllCards(list: List<Prediction>): List<TarotCard> {
-        val cardsList = mutableListOf<TarotCard>()
-        list.forEach {
-            cardsList.addAll(it.cards)
-        }
-        return cardsList
-    }
-
-    val totalPredictions = _uiState.value.predictions.size
-    private val cardsList = collectAllCards(_uiState.value.predictions)
-
-    val counts = cardsList.groupingBy { it }
-        .eachCount()
-    val maxCount = counts.values.maxOrNull() ?: 0
-    val favouriteCard = if (counts.isNotEmpty()) counts.filterValues { it == maxCount }.keys.first() else
-        TarotCard.The_Fool
 
     init {
         viewModelScope.launch {
             appSettingsDataStoreManager.appSettingsFlow.collect {
                 _uiState.value = it
             }
-            println("Timestamp after load, before update: ${_uiState.value.lastSessionDateTimeMilliSec}")
-            if (_uiState.value.lastSessionDateTimeMilliSec < 1) {
-                updateSessionTimeStamp(nowTimestampMillis)
-            }
-            println("Timestamp after load, after update: ${_uiState.value.lastSessionDateTimeMilliSec}")
         }
     }
+
 
     fun formatMillisToDateTimeUTC(milliseconds: Long, pattern: String): String {
         val instant: Instant = Instant.ofEpochMilli(milliseconds)
@@ -72,10 +57,10 @@ class AppViewModel(
         return offsetDateTime.format(formatter)
     }
 
-    suspend fun sessionLaunch(
+    fun sessionLaunch(
         lastSessionMillis: Long,
         nowMillis: Long,
-        interval: Long = 144000000,
+        interval: Long = 86400000,
         currencyType: CurrencyType = CurrencyType.MANA,
         amount: Long = 30
     ) {
@@ -95,9 +80,12 @@ class AppViewModel(
         }
     }
 
-    suspend fun updateGender(gender: String) {
+    fun updateFirstLaunch(value: Boolean) {
         viewModelScope.launch {
-            appSettingsDataStoreManager.updateGender(gender)
+            preferencesManager.saveBoolKeyToDataStore(
+                isFirstOpen,
+                value
+            )
         }
     }
 

@@ -1,11 +1,7 @@
 package com.tarotreader.app.model
 
 import androidx.annotation.DrawableRes
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import com.tarotreader.app.R
-import kotlinx.serialization.Serializable
 
 enum class Suites {
     MAJOR,
@@ -203,17 +199,35 @@ data class Draw(
 
 enum class Spread(
     @DrawableRes val schemeImg: Int,
-    val description: String,
+    val shortDescription: String,
     val nCards: Int,
     val affiliation: SpreadAffiliation,
     val manaCost: Int,
     private val flipChance: Double = 0.38,
 ) {
-    SINGLE_CARD(schemeImg = R.drawable.single_card, description = "Single Card", nCards = 1, affiliation = SpreadAffiliation.CLASSIC, manaCost = 3),
-    THREE_CARDS(schemeImg = R.drawable.three_card, description = "Three Cards", nCards = 3, affiliation = SpreadAffiliation.CLASSIC, manaCost = 4),
-    BROKEN_HEART(schemeImg = R.drawable.broken_heart, description = "Broken heart", nCards = 7, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 7),
-    HEALING_HEARTS(schemeImg = R.drawable.healing_hearts, description = "Healing hearts", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 6),
-    PYRAMID(schemeImg = R.drawable.pyramid, description = "Pyramid", nCards = 6, affiliation = SpreadAffiliation.RELATIONSHIP, manaCost = 6);
+    SINGLE_CARD(
+        schemeImg = R.drawable.single_card,
+        shortDescription = "Quick spread for Yes or No queries",
+        nCards = 1,
+        affiliation = SpreadAffiliation.GENERIC,
+        manaCost = 3
+    ),
+    THREE_CARDS(
+        schemeImg = R.drawable.three_card,
+        shortDescription = "Classic spread to find out the Past, the Future and the Present",
+        nCards = 3, affiliation = SpreadAffiliation.GENERIC, manaCost = 4),
+    BROKEN_HEART(
+        schemeImg = R.drawable.broken_heart,
+        shortDescription = "Specialized spread for relationship crisis",
+        nCards = 7, affiliation = SpreadAffiliation.LOVE, manaCost = 7),
+    HEALING_HEARTS(
+        schemeImg = R.drawable.healing_hearts,
+        shortDescription = "Get a compassionate overview ones your love affairs",
+        nCards = 6, affiliation = SpreadAffiliation.LOVE, manaCost = 6),
+    PYRAMID(
+        schemeImg = R.drawable.pyramid,
+        shortDescription = "Unravel complex situations with this spread",
+        nCards = 6, affiliation = SpreadAffiliation.CAREER, manaCost = 6);
 
     fun toReadableString(): String {
         return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
@@ -233,7 +247,11 @@ enum class Spread(
 }
 
 enum class SpreadAffiliation {
-    CLASSIC,
-    RELATIONSHIP,
-    CAREER
+    GENERIC,
+    CAREER,
+    LOVE;
+
+    override fun toString(): String {
+        return name.split("_").joinToString(separator = " ") { it.lowercase().replaceFirstChar { it.uppercase() } }
+    }
 }
