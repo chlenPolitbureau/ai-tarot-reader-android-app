@@ -249,7 +249,7 @@ fun ChooseSpread(
                     spreads[0]
                 ) }
             ) {
-                Text(spreads[0].shortDescription)
+                Text(spreads[0].toReadableString())
             }
             ElevatedButton(
                 modifier = Modifier.defaultMinSize(
@@ -259,7 +259,7 @@ fun ChooseSpread(
                     spreads[1]
                 ) }
             ) {
-                Text(spreads[1].shortDescription)
+                Text(spreads[1].toReadableString())
             }
         }
         Row (
@@ -271,21 +271,21 @@ fun ChooseSpread(
                     spreads[2]
                 ) }
             ) {
-                Text(spreads[2].shortDescription)
+                Text(spreads[2].toReadableString())
             }
             ElevatedButton(
                 onClick = { chatViewModel.updateSelectedSpread(
                     spreads[3]
                 ) }
             ) {
-                Text(spreads[3].shortDescription)
+                Text(spreads[3].toReadableString())
             }
             ElevatedButton(
                 onClick = { chatViewModel.updateSelectedSpread(
                     spreads[4]
                 ) }
             ) {
-                Text(spreads[4].shortDescription)
+                Text(spreads[4].toReadableString())
             }
         }
     }
@@ -366,7 +366,11 @@ fun EndFirstLazyColumn(
                 DrawMessage(
                     n = index,
                     chatViewModel = chatViewModel,
-                    postback = { chatViewModel.makePrediction() }
+                    postback = {
+                        coroutineScope.launch {
+                            chatViewModel.makePrediction()
+                        }
+                    }
                 )
             } else {
                 Message(
@@ -552,7 +556,7 @@ fun GifThenText(
     }
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (showGif) {
+        if (showGif || text == "") {
             // Display the GIF
             val context = LocalContext.current
             val painter = rememberDrawablePainter(

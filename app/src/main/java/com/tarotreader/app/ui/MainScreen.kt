@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -308,7 +309,8 @@ fun StatsBlock(
                 StatsPlaceholder(
                     icon = R.drawable.popular_tarot_card,
                     text = "Favourite card",
-                    value = favouriteCard.toString()
+                    value = favouriteCard.toString(),
+                    extraValue = maxCount
                 )
                 StatsPlaceholder(
                     icon = R.drawable.streak,
@@ -340,8 +342,11 @@ fun StatsBlock(
 fun StatsPlaceholder(
     @DrawableRes icon: Int,
     text: String,
-    value: kotlin.Any
+    value: kotlin.Any,
+    extraValue: Int? = null
 ) {
+
+    val extraText = if (extraValue != null) " ($extraValue)" else ""
     Row (
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(start = 5.dp, top = 5.dp, end = 10.dp, bottom = 10.dp)
@@ -358,12 +363,14 @@ fun StatsPlaceholder(
             style = Typography.bodyLarge
         )
         Text(
-            "$value",
+            "$value"  + "$extraText",
             modifier = Modifier
                 .padding(start = 15.dp, end = 20.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .widthIn(max = 250.dp),
             style = Typography.bodyLarge,
-            textAlign = TextAlign.End
+            textAlign = TextAlign.End,
+            maxLines = 2
         )
     }
 }

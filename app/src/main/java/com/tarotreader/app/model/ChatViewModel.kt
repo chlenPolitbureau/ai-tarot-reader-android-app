@@ -12,6 +12,7 @@ import com.tarotreader.app.data.ChatDataSource
 import com.tarotreader.app.data.PredictRequest
 import com.tarotreader.app.data.RetrofitClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -58,15 +59,12 @@ class ChatViewModel @Inject constructor (
     ) {
         viewModelScope.launch {
             if (chatMessage.author.id == "user") {
-//                _messages.add(chatMessage)
                 addMessage(chatMessage, true)
                 manageMessage(chatMessage)
                 question.value = chatMessage.text
                 showController.value = !showController.value
                 _listOfCardStates.add(mutableListOf(false))
             } else if (chatMessage.author.id == "app") {
-                val index = _messages.size
-//                _messages.add(chatMessage)
                 addMessage(chatMessage, false)
                 if (chatMessage.draw != null) {
                     _listOfCardStates.add(
@@ -114,7 +112,9 @@ class ChatViewModel @Inject constructor (
                 spread = spread,
                 listOfCards = cardsDrawn,
                 postback = {
-                    makePrediction()
+                    viewModelScope.launch {
+                        makePrediction()
+                    }
                 }
             )
 
@@ -130,25 +130,37 @@ class ChatViewModel @Inject constructor (
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun makePrediction() {
+    suspend fun makePrediction() {
         viewModelScope.launch {
             val cardsString = predictionListOfCards.value.joinToString(":") {
                 it.name + "," + it.orientation.toString()
             }
-            val prediction = RetrofitClient.tarotReaderAPIService.getPrediction(
-                PredictRequest(
-                    q=question.value,
-                    cardsPicked = cardsString,
-                    spread = predictionSpread.value?.name ?: Spread.THREE_CARDS.name
-                )
-            )
-            val response = prediction.body()?.prediction ?: "Sorry, I can't help with that"
+            var response = ""
             addMessage(
                 ChatMessage(
                     text = response,
                     author = Author("app")
                 )
             )
+            val prediction = async {
+                RetrofitClient.tarotReaderAPIService.getPrediction(
+                    PredictRequest(
+                        q = question.value,
+                        cardsPicked = cardsString,
+                        spread = predictionSpread.value?.name ?: Spread.THREE_CARDS.name
+                    )
+                )
+            }
+            response = prediction.await().body()?.prediction ?: "Sorry, I can't help with that"
+            _messages.takeLast(1).forEach {
+                it.updateText(response)
+            }
+//            addMessage(
+//                ChatMessage(
+//                    text = response,
+//                    author = Author("app")
+//                )
+//            )
             val pred = Prediction(
                 question = question.value,
                 prediction = response,
@@ -164,6 +176,7 @@ class ChatViewModel @Inject constructor (
             ifExpectingPrediction.value = false
             showController.value = !showController.value
             spreadSelected = false
+            predictionSpread.value = null
         }
     }
 
@@ -200,7 +213,7 @@ data class Author(
 )
 
 data class ChatMessage(
-    val text: String,
+    var text: String,
     val author: Author,
     val ifFullWidth: Boolean = false,
     var showOptions: Boolean = true,
@@ -209,6 +222,10 @@ data class ChatMessage(
 ) {
     val isFromMe: Boolean
         get() = author.id != "app"
+
+    fun updateText(newText: String) {
+        text = newText
+    }
 }
 
 data class TarotReader(
