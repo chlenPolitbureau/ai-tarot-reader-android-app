@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,11 +21,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,11 +33,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import com.tarotreader.app.Chat
 import com.tarotreader.app.R
 import com.tarotreader.app.model.AppViewModel
@@ -52,8 +53,6 @@ import com.tarotreader.app.ui.theme.Typography
 import com.tarotreader.app.ui.theme.bkgrndGrey
 import com.tarotreader.app.ui.theme.poshGreen
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.coroutines.launch
-import okhttp3.internal.UTC
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -112,6 +111,11 @@ fun MainScreen(
 
             StatsBlock(
                 predictionsList = predictions
+            )
+
+            BannerAd(
+                modifier = Modifier.padding(top = 20.dp, bottom = 10.dp),
+                adId = "ca-app-pub-3940256099942544/9214589741"
             )
         }
     }
@@ -373,4 +377,21 @@ fun StatsPlaceholder(
             maxLines = 2
         )
     }
+}
+
+@Composable
+fun BannerAd(
+    modifier: Modifier, adId: String
+) {
+    AndroidView(
+        modifier = modifier.fillMaxWidth(),
+        factory = {
+            context ->
+            AdView(context).apply {
+                setAdSize(AdSize.BANNER)
+                adUnitId = adId
+                loadAd(AdRequest.Builder().build())
+            }
+        }
+    )
 }

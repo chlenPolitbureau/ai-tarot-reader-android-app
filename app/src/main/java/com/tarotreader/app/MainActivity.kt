@@ -1,6 +1,5 @@
 package com.tarotreader.app
 
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -18,8 +18,9 @@ import com.tarotreader.app.data.PreferencesManager
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.AppViewModelFactory
 import com.tarotreader.app.ui.theme.TarotReaderTheme
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 //val Context.dataStore by dataStore("settings.json", AppSettingsSerializer)
@@ -36,6 +37,10 @@ class MainActivity : ComponentActivity() {
             setKeepOnScreenCondition {
                 false
             }
+        }
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            MobileAds.initialize(this@MainActivity) {}
         }
         enableEdgeToEdge()
         setContent {

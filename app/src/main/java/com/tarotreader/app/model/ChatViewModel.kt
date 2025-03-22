@@ -155,12 +155,6 @@ class ChatViewModel @Inject constructor (
             _messages.takeLast(1).forEach {
                 it.updateText(response)
             }
-//            addMessage(
-//                ChatMessage(
-//                    text = response,
-//                    author = Author("app")
-//                )
-//            )
             val pred = Prediction(
                 question = question.value,
                 prediction = response,
