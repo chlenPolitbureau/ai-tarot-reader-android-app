@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,7 +40,6 @@ import androidx.navigation.NavHostController
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import com.tarotreader.app.Chat
 import com.tarotreader.app.R
 import com.tarotreader.app.model.AppViewModel
 import com.tarotreader.app.model.DailyAdvice
@@ -175,23 +173,6 @@ fun MainPathBlock(
         horizontalArrangement = Arrangement.SpaceAround,
         modifier = Modifier.fillMaxWidth()
     ) {
-        PathBox(
-            image = R.drawable.yes_or_no,
-            headline = "Yes or No",
-            route = Chat(
-                spread = Spread.SINGLE_CARD
-            ),
-            navController = navController
-        )
-
-        PathBox(
-            image = R.drawable.daily_inspiration,
-            headline = "Daily Inspiration",
-            route = Chat(
-                spread = Spread.THREE_CARDS
-            ),
-            navController = navController
-        )
     }
 }
 

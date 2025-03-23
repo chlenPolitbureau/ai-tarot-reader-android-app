@@ -1,6 +1,5 @@
 package com.tarotreader.app
 
-import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Spacer
@@ -33,9 +32,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,10 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.tarotreader.app.data.BottomBarMenuItem
 import com.tarotreader.app.model.AppViewModel
-import com.tarotreader.app.model.ChatViewModel
 import com.tarotreader.app.model.CurrencyType
-import com.tarotreader.app.model.Spread
-import com.tarotreader.app.ui.ChatView
 import com.tarotreader.app.ui.ContentTabs
 import com.tarotreader.app.ui.ContentViewPage
 import com.tarotreader.app.ui.FeatureDescriptionScreen
@@ -142,21 +135,6 @@ fun TarotReaderApp(
                     MainScreen(
                         appViewModel = appViewModel,
                         navController = navController
-                    )
-                }
-                composable<Chat> {
-                    val args = it.toRoute<Chat>()
-                    val chatViewModel = viewModel<ChatViewModel>(
-                        factory = object : ViewModelProvider.Factory {
-                            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                                return ChatViewModel(appViewModel, args.spread) as T
-                            }
-                        }
-                    )
-                    ChatView(
-                        appViewModel = appViewModel,
-                        chatViewModel = chatViewModel,
-                        spreadParameter = args.spread
                     )
                 }
                 composable<Learn> {
@@ -281,11 +259,6 @@ fun RealBottomBar(
             navigate = { navController.navigate(Main) }
         ),
         BottomBarMenuItem(
-            text = R.string.Reading,
-            icon = R.drawable.sparkle,
-            navigate = { navController.navigate(Chat(spread = null)) }
-        ),
-        BottomBarMenuItem(
             text = R.string.learn,
             icon = R.drawable.graduationcap,
             navigate = { navController.navigate(Learn(startingTab = 0)) }
@@ -324,11 +297,6 @@ object Main
 
 @Serializable
 object Journal
-
-@Serializable
-data class Chat(
-    val spread: Spread? = null
-)
 
 @Serializable
 data class Learn(

@@ -24,7 +24,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.tarotreader.app.Chat
 import com.tarotreader.app.R
 import com.tarotreader.app.data.ArticlesDataSource
 import com.tarotreader.app.model.Article
@@ -217,11 +216,6 @@ fun SpreadDescriptionViewPage(
         }
         ElevatedButton(
             onClick = {
-                navController.navigate(
-                    Chat(
-                        spread = spread
-                    )
-                )
             },
             modifier = Modifier.weight(1f)
         ) {
